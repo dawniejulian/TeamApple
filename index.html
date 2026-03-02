@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kasirin - Sistem Manajemen Stok & Penjualan</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+        'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 90%;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      color: #1f2937;
+    }
+
+    .tagline {
+      color: #6b7280;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .features {
+      text-align: left;
+      margin: 30px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .feature {
+      padding: 15px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .feature strong {
+      color: #1f2937;
+    }
+
+    .feature p {
+      color: #6b7280;
+      font-size: 0.9em;
+      margin-top: 5px;
+    }
+
+    .buttons {
+      margin-top: 40px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button, a {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #1f2937;
+      font-weight: 600;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .status {
+      margin-top: 30px;
+      padding: 15px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      color: #1e40af;
+      font-size: 0.9em;
+    }
+
+    .loading {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💎 KASIRIN</h1>
+    <p class="tagline">Sistem Manajemen Stok & Penjualan Terintegrasi</p>
+
+    <div class="features">
+      <div class="feature">
+        <strong>📦 Manajemen Stok</strong>
+        <p>Real-time inventory tracking dan notifikasi stok</p>
+      </div>
+      <div class="feature">
+        <strong>🛒 Penjualan Terpadu</strong>
+        <p>Integrasi offline dan multi-channel</p>
+      </div>
+      <div class="feature">
+        <strong>📊 Analytics</strong>
+        <p>Laporan penjualan dan insights bisnis</p>
+      </div>
+      <div class="feature">
+        <strong>💰 Manajemen Harga</strong>
+        <p>Sinkronisasi harga antar platform</p>
+      </div>
+      <div class="feature">
+        <strong>👤 Multi User</strong>
+        <p>Role-based access control</p>
+      </div>
+      <div class="feature">
+        <strong>📱 Responsive</strong>
+        <p>Desktop dan tablet friendly</p>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <a href="http://localhost:3000" class="btn-primary" target="_blank">
+        🚀 Buka Aplikasi
+      </a>
+      <a href="#" class="btn-secondary">
+        📖 Dokumentasi
+      </a>
+    </div>
+
+    <div class="status">
+      <p>ℹ️ Pastikan backend (localhost:5000) dan frontend (localhost:3000) sudah berjalan.</p>
+      <p style="margin-top: 10px;">
+        <strong>Demo Login:</strong> Username: admin | Password: any
+      </p>
+    </div>
+
+    <div class="loading">
+      <p>⏳ Jika halaman belum load, pastikan:</p>
+      <p>✓ Backend running: npm run dev (port 5000)</p>
+      <p>✓ Frontend running: npm start (port 3000)</p>
+      <p>✓ PostgreSQL database: kasirin_db</p>
+    </div>
+  </div>
+</body>
+</html>
