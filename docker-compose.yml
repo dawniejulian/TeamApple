@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   db:
@@ -10,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
@@ -36,8 +34,10 @@ services:
       DB_PASSWORD: postgres
       PORT: 5000
       NODE_ENV: production
+      JWT_SECRET: kasirin_jwt_secret_2024_secure
+      FRONTEND_URL: http://localhost:3001
     ports:
-      - "5000:5000"
+      - "5001:5000"
     depends_on:
       db:
         condition: service_healthy
@@ -50,14 +50,16 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: http://localhost:5001/api
     container_name: kasirin_frontend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     networks:
       - kasirin_network
     restart: unless-stopped
     environment:
-      REACT_APP_API_URL: http://localhost:5000/api
+      REACT_APP_API_URL: http://localhost:5001/api
 
 volumes:
   postgres_data:

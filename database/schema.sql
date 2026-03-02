@@ -1,10 +1,6 @@
 -- Kasirin Database Schema
 -- Database untuk Sistem Manajemen Stok dan Penjualan Terintegrasi
 
--- Create Database
-CREATE DATABASE IF NOT EXISTS kasirin_db;
-\c kasirin_db
-
 -- ============================================================================
 -- 1. USERS & AUTHENTICATION
 -- ============================================================================
@@ -355,11 +351,11 @@ INSERT INTO products (sku, name, category_id, description, condition_id, buy_pri
 ('PROD-003', 'iPhone 14 Pro 128GB Bekas', 3, 'iPhone 14 Pro, 128GB, Deep Purple, Kondisi Bekas', 2, 8000000, 10000000, 'https://example.com/iphone-14-pro.jpg'),
 ('PROD-004', 'Apple USB-C Charger 20W', 4, 'Pengisi Daya Apple USB-C 20W, Original', 1, 300000, 450000, 'https://example.com/charger.jpg');
 
--- Sample Users
+-- Sample Users (admin=admin123, manager=manager123, staff1=staff123)
 INSERT INTO users (username, email, password, first_name, last_name, role_id, phone, is_active) VALUES
-('admin', 'admin@kasirin.local', '$2a$10$YourHashedPasswordHere', 'Admin', 'User', 1, '081234567890', TRUE),
-('manager', 'manager@kasirin.local', '$2a$10$YourHashedPasswordHere', 'Manajer', 'Toko', 2, '081234567891', TRUE),
-('staff1', 'staff1@kasirin.local', '$2a$10$YourHashedPasswordHere', 'Staf', 'Penjualan', 3, '081234567892', TRUE);
+('admin', 'admin@kasirin.local', '$2a$10$IW.XwMjwv/vUiqOLZbvrf.QXLsqPugNoBLPfjCRdPicX2h5Q4n3Qy', 'Admin', 'Kasirin', 1, '081234567890', TRUE),
+('manager', 'manager@kasirin.local', '$2a$10$58Bx2tnQ3S/u5LtdVmoVA.InqeL9Y/5H12B/3h0GVxFzzdm2UEhby', 'Manajer', 'Toko', 2, '081234567891', TRUE),
+('staff1', 'staff1@kasirin.local', '$2a$10$OV0VK4JLfxEw05yBSNXHEeiwxXz3YqF5RLrSZ7nO57iliWczwAoDK', 'Staf', 'Penjualan', 3, '081234567892', TRUE);
 
 -- ============================================================================
 -- EOF

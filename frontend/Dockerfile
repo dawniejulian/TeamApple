@@ -9,6 +9,10 @@ RUN npm install
 
 COPY . .
 
+# Build args for compile-time env vars
+ARG REACT_APP_API_URL=http://localhost:5001/api
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
 RUN npm run build
 
 # Production stage

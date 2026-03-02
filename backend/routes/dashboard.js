@@ -2,6 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
+const { authenticateToken } = require('../middleware/auth');
+
+// Apply auth to all dashboard routes
+router.use(authenticateToken);
 
 /**
  * @route   GET /api/dashboard/summary

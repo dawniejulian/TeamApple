@@ -2,6 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
+const { authenticateToken, requireRole } = require('../middleware/auth');
+
+// Apply auth + ADMIN role to all admin routes
+router.use(authenticateToken);
+router.use(requireRole('ADMIN'));
 
 /**
  * @route   GET /api/admin/users

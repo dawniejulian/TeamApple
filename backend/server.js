@@ -13,8 +13,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // CORS
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3001')
+  .split(',')
+  .map(o => o.trim());
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS blocked: ${origin}`));
+  },
   credentials: true
 }));
 
