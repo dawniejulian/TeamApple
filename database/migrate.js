@@ -4,14 +4,11 @@ require('dotenv').config({ path: '../backend/.env' });
 const poolConfig = {
   user: 'postgres',
   host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: 'postgres'
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+  database: 'postgres',
+  // always include a password field; an empty string is fine when none is set
+  password: process.env.DB_PASSWORD ? String(process.env.DB_PASSWORD) : ''
 };
-
-// Only add password if it exists
-if (process.env.DB_PASSWORD) {
-  poolConfig.password = process.env.DB_PASSWORD;
-}
 
 const pool = new Pool(poolConfig);
 

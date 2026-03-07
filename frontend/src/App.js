@@ -17,6 +17,7 @@ import InventoryPage from './pages/Inventory/InventoryPage';
 import SalesPage from './pages/Sales/SalesPage';
 import SalesFormPage from './pages/Sales/SalesFormPage';
 import ReportsPage from './pages/Reports/ReportsPage';
+import ReceiptPage from './pages/Receipt/ReceiptPage';
 import SettingsPage from './pages/Settings/SettingsPage';
 
 function App() {
@@ -42,6 +43,9 @@ function App() {
           {/* Sales */}
           <Route path="/sales" element={<SalesPage />} />
           <Route path="/sales/new" element={<SalesFormPage />} />
+          
+          {/* Receipt */}
+          <Route path="/receipt" element={<ReceiptPage />} />
           
           {/* Reports */}
           <Route path="/reports" element={<ReportsPage />} />

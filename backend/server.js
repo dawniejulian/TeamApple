@@ -17,11 +17,28 @@ const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3001')
   .split(',')
   .map(o => o.trim());
 
+// Add localhost variants for Docker internal networking
+const corsOrigins = [
+  ...allowedOrigins,
+  'http://localhost:3000',      // Docker internal frontend port
+  'http://localhost:3001',      // Host binding
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://frontend:3000',       // Docker network service name
+];
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (corsOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`⚠️ CORS warning: ${origin} not in allowed list`);
+    // In production, reject. In dev, allow with warning
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
     callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true

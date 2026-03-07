@@ -279,4 +279,115 @@ router.get('/report/daily', async (req, res) => {
   }
 });
 
+/**
+ * @route   POST /api/sales/simple
+ * @desc    Create new sale transaction (simplified - single item)
+ * @access  Private
+ */
+router.post('/simple', async (req, res) => {
+  try {
+    const {
+      product_id,
+      quantity,
+      price_per_unit,
+      sales_channel_id,
+      customer_name,
+      customer_phone,
+      notes,
+      payment_method
+    } = req.body;
+
+    const user_id = req.user?.id || 1;
+
+    if (!product_id || !quantity || !sales_channel_id) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'Product ID, quantity, dan sales channel harus diisi'
+      });
+    }
+
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+
+      // Get product details
+      const productResult = await client.query(`
+        SELECT id, selling_price FROM products WHERE id = $1
+      `, [product_id]);
+
+      if (productResult.rows.length === 0) {
+        throw new Error('Produk tidak ditemukan');
+      }
+
+      const product = productResult.rows[0];
+      const unitPrice = price_per_unit || product.selling_price;
+
+      // Generate invoice number
+      const invoiceResult = await client.query(`
+        SELECT COUNT(*) as count FROM sales WHERE DATE(created_at) = CURRENT_DATE
+      `);
+      const invoiceNumber = `INV-${new Date().toISOString().split('T')[0]}-${String(invoiceResult.rows[0].count + 1).padStart(4, '0')}`;
+
+      // Calculate totals
+      const subtotal = quantity * unitPrice;
+      const totalAmount = subtotal;
+
+      // Create sale
+      const saleResult = await client.query(`
+        INSERT INTO sales 
+        (invoice_number, sales_channel_id, customer_name, customer_phone, subtotal, total_amount, payment_method, sales_staff_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING *
+      `, [invoiceNumber, sales_channel_id, customer_name || 'Walk-in Customer', customer_phone || null, subtotal, totalAmount, payment_method || 'CASH', user_id]);
+
+      const saleId = saleResult.rows[0].id;
+
+      // Insert sale items
+      await client.query(`
+        INSERT INTO sale_items 
+        (sale_id, product_id, quantity, unit_price, subtotal)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [saleId, product_id, quantity, unitPrice, subtotal]);
+
+      // Deduct inventory
+      await client.query(`
+        UPDATE inventory 
+        SET quantity_available = quantity_available - $1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE product_id = $2
+      `, [quantity, product_id]);
+
+      // Record stock movement
+      await client.query(`
+        INSERT INTO stock_movements 
+        (product_id, warehouse_location_id, movement_type, quantity, reference_id, reference_type, notes, created_by)
+        VALUES ($1, 1, 'STOCK_OUT', $2, $3, 'SALE', $4, $5)
+      `, [product_id, quantity, saleId, notes || null, user_id]);
+
+      await client.query('COMMIT');
+
+      res.status(201).json({
+        status: 'SUCCESS',
+        message: 'Penjualan berhasil ditambahkan',
+        data: {
+          id: saleId,
+          invoice_number: invoiceNumber,
+          total_amount: totalAmount
+        }
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

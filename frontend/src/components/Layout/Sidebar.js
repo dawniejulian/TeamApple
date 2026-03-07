@@ -6,6 +6,7 @@ import {
   FiShoppingCart,
   FiBox,
   FiTrendingUp,
+  FiPrinter,
   FiSettings,
   FiLogOut,
 } from 'react-icons/fi';
@@ -16,6 +17,7 @@ export default function Sidebar({ isOpen, onToggle }) {
     { icon: FiBox, label: 'Produk', path: '/products' },
     { icon: FiShoppingCart, label: 'Stok', path: '/inventory' },
     { icon: FiTrendingUp, label: 'Penjualan', path: '/sales' },
+    { icon: FiPrinter, label: 'Cetak Struk', path: '/receipt' },
     { icon: FiTrendingUp, label: 'Laporan', path: '/reports' },
     { icon: FiSettings, label: 'Pengaturan', path: '/settings' },
   ];

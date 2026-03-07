@@ -4,7 +4,66 @@ const router = express.Router();
 const pool = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 
-// Apply auth to all product routes
+/**
+ * PUBLIC ENDPOINTS - No Auth Required
+ */
+
+/**
+ * @route   GET /api/products/categories/list
+ * @desc    Get all categories for dropdown
+ * @access  Public
+ */
+router.get('/categories/list', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, name, description 
+      FROM categories 
+      WHERE is_active = true 
+      ORDER BY name
+    `);
+
+    res.json({
+      status: 'SUCCESS',
+      data: result.rows
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * @route   GET /api/products/conditions/list
+ * @desc    Get all product conditions for dropdown
+ * @access  Public
+ */
+router.get('/conditions/list', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, name 
+      FROM product_conditions
+      ORDER BY name
+    `);
+
+    res.json({
+      status: 'SUCCESS',
+      data: result.rows
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * PROTECTED ENDPOINTS - Auth Required
+ */
+
+// Apply auth to remaining product routes
 router.use(authenticateToken);
 
 /**

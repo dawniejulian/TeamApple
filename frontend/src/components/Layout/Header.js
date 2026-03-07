@@ -2,7 +2,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FiMenu, FiBell, FiUser, FiLogOut } from 'react-icons/fi';
+import { FiMenu, FiBell, FiLogOut } from 'react-icons/fi';
 import { logoutUser } from '../../store/slices/authSlice';
 import { toast } from 'react-toastify';
 
