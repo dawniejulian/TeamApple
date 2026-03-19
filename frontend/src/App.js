@@ -16,14 +16,20 @@ import ProductDetailPage from './pages/Products/ProductDetailPage';
 import InventoryPage from './pages/Inventory/InventoryPage';
 import SalesPage from './pages/Sales/SalesPage';
 import SalesFormPage from './pages/Sales/SalesFormPage';
+import ShiftsPage from './pages/Shifts/ShiftsPage';
+import PurchaseOrdersPage from './pages/PurchaseOrders/PurchaseOrdersPage';
 import ReportsPage from './pages/Reports/ReportsPage';
 import ReceiptPage from './pages/Receipt/ReceiptPage';
 import SettingsPage from './pages/Settings/SettingsPage';
+import CustomerDisplayPage from './pages/Customer/CustomerDisplayPage';
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Customer Display (public route for second screen) */}
+        <Route path="/customer-display" element={<CustomerDisplayPage />} />
+
         {/* Auth Routes */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
@@ -43,6 +49,12 @@ function App() {
           {/* Sales */}
           <Route path="/sales" element={<SalesPage />} />
           <Route path="/sales/new" element={<SalesFormPage />} />
+          
+          {/* Shifts */}
+          <Route path="/shifts" element={<ShiftsPage />} />
+          
+          {/* Purchase Orders */}
+          <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
           
           {/* Receipt */}
           <Route path="/receipt" element={<ReceiptPage />} />

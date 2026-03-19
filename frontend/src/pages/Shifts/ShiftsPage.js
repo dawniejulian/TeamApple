@@ -1,0 +1,268 @@
+// frontend/src/pages/Shifts/ShiftsPage.js
+import React, { useEffect, useState } from 'react';
+import { FiClock, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import api from '../../services/api';
+import { toast } from 'react-toastify';
+
+export default function ShiftsPage() {
+  const [shifts, setShifts] = useState([]);
+  const [currentShift, setCurrentShift] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showOpenForm, setShowOpenForm] = useState(false);
+  const [showCloseForm, setShowCloseForm] = useState(false);
+  const [closeData, setCloseData] = useState({ actual_amount: '', notes: '' });
+
+  useEffect(() => {
+    fetchShifts();
+    fetchCurrentShift();
+  }, []);
+
+  const fetchShifts = async () => {
+    try {
+      const res = await api.get('/shifts/history?limit=10');
+      setShifts(res.data.data || []);
+    } catch (error) {
+      toast.error('Gagal mengambil riwayat shift');
+    }
+  };
+
+  const fetchCurrentShift = async () => {
+    try {
+      const res = await api.get('/shifts/open-shift');
+      setCurrentShift(res.data.data);
+    } catch (error) {
+      setCurrentShift(null);
+    }
+  };
+
+  const handleOpenShift = async (floatAmount) => {
+    setLoading(true);
+    try {
+      const res = await api.post('/shifts/open', { float_amount: parseFloat(floatAmount) });
+      toast.success('Shift berhasil dibuka');
+      setShowOpenForm(false);
+      fetchCurrentShift();
+      fetchShifts();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Gagal membuka shift');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCloseShift = async () => {
+    if (!closeData.actual_amount) {
+      toast.error('Masukkan jumlah uang di kasir');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.put(`/shifts/${currentShift.id}/close`, {
+        actual_amount: parseFloat(closeData.actual_amount),
+        discrepancy_notes: closeData.notes
+      });
+      toast.success('Shift berhasil ditutup');
+      setShowCloseForm(false);
+      setCloseData({ actual_amount: '', notes: '' });
+      fetchCurrentShift();
+      fetchShifts();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Gagal menutup shift');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Manajemen Shift</h1>
+        {!currentShift && (
+          <button
+            onClick={() => setShowOpenForm(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Buka Shift
+          </button>
+        )}
+      </div>
+
+      {/* Current Shift Card */}
+      {currentShift && (
+        <div className="card border-2 border-green-400 bg-green-50">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-green-700 flex items-center gap-2">
+                <FiClock className="text-green-600" size={28} />
+                Shift Aktif
+              </h2>
+              <p className="text-gray-600 mt-2">
+                Dibuka: {new Date(currentShift.opened_at).toLocaleString('id-ID')}
+              </p>
+              <p className="text-lg font-semibold mt-3">
+                Float: Rp {parseInt(currentShift.float_amount).toLocaleString('id-ID')}
+              </p>
+              <p className="text-lg font-semibold">
+                Total Penjualan: Rp {parseInt(currentShift.total_sales || 0).toLocaleString('id-ID')}
+              </p>
+              <p className="text-lg font-semibold">
+                Ekspektasi Kasir: Rp {parseInt(currentShift.expected_amount || 0).toLocaleString('id-ID')}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCloseForm(true)}
+              className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold"
+            >
+              Tutup Shift
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Open Shift Form */}
+      {showOpenForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Buka Shift Baru</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Nominal Float (Rp)</label>
+                <input
+                  type="number"
+                  id="floatAmount"
+                  defaultValue="1000000"
+                  className="w-full border rounded-lg px-3 py-2"
+                  placeholder="Jumlah uang awal di kasir"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    const amount = document.getElementById('floatAmount').value;
+                    handleOpenShift(amount);
+                  }}
+                  disabled={loading}
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Memproses...' : 'Buka Shift'}
+                </button>
+                <button
+                  onClick={() => setShowOpenForm(false)}
+                  className="flex-1 bg-gray-300 text-black py-2 rounded-lg hover:bg-gray-400"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Close Shift Form */}
+      {showCloseForm && currentShift && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Tutup Shift</h3>
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-gray-600">Ekspektasi</p>
+                <p className="text-2xl font-bold">
+                  Rp {parseInt(currentShift.expected_amount || 0).toLocaleString('id-ID')}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Jumlah Uang Aktual (Rp)</label>
+                <input
+                  type="number"
+                  value={closeData.actual_amount}
+                  onChange={(e) => setCloseData({ ...closeData, actual_amount: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2"
+                  placeholder="Masukkan jumlah uang"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Catatan (jika ada selisih)</label>
+                <textarea
+                  value={closeData.notes}
+                  onChange={(e) => setCloseData({ ...closeData, notes: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2"
+                  rows="3"
+                  placeholder="Alasan jika ada selisih kas"
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCloseShift}
+                  disabled={loading}
+                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                >
+                  {loading ? 'Memproses...' : 'Tutup Shift'}
+                </button>
+                <button
+                  onClick={() => setShowCloseForm(false)}
+                  className="flex-1 bg-gray-300 text-black py-2 rounded-lg hover:bg-gray-400"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Shift History */}
+      <div className="card">
+        <h2 className="text-xl font-bold mb-4">Riwayat Shift</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="pb-3">Tanggal Buka</th>
+                <th className="pb-3">Float</th>
+                <th className="pb-3">Penjualan</th>
+                <th className="pb-3">Ekspektasi</th>
+                <th className="pb-3">Selisih</th>
+                <th className="pb-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shifts.map((shift) => (
+                <tr key={shift.id} className="border-b hover:bg-gray-50">
+                  <td className="py-3">
+                    {new Date(shift.opened_at).toLocaleString('id-ID')}
+                  </td>
+                  <td className="py-3">
+                    Rp {parseInt(shift.float_amount).toLocaleString('id-ID')}
+                  </td>
+                  <td className="py-3">
+                    Rp {parseInt(shift.total_sales || 0).toLocaleString('id-ID')}
+                  </td>
+                  <td className="py-3">
+                    Rp {parseInt(shift.expected_amount || 0).toLocaleString('id-ID')}
+                  </td>
+                  <td className="py-3">
+                    <span className={shift.discrepancy === 0 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+                      Rp {parseInt(shift.discrepancy || 0).toLocaleString('id-ID')}
+                    </span>
+                  </td>
+                  <td className="py-3">
+                    {shift.status === 'CLOSED_OK' ? (
+                      <span className="text-green-600 flex items-center gap-1">
+                        <FiCheckCircle size={16} /> Sesuai
+                      </span>
+                    ) : (
+                      <span className="text-red-600 flex items-center gap-1">
+                        <FiAlertCircle size={16} /> Selisih
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

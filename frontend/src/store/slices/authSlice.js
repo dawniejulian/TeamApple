@@ -9,19 +9,26 @@ export const loadUser = createAsyncThunk('auth/loadUser', async (_, { rejectWith
     return response.data.data;
   } catch (error) {
     localStorage.removeItem('token');
-    return rejectWithValue(error.response?.data?.message || 'Session expired');
+    const errorMessage = error.response?.data?.message || error.message || 'Sesi expired';
+    console.error('[Auth] Load user error:', errorMessage);
+    return rejectWithValue(errorMessage);
   }
 });
 
 // Async: login
 export const loginUser = createAsyncThunk('auth/loginUser', async ({ username, password }, { rejectWithValue }) => {
   try {
+    console.log('[Auth] Attempting login with username:', username);
     const response = await api.post('/auth/login', { username, password });
     const { token, user } = response.data.data;
+    console.log('[Auth] Login successful, token received');
     localStorage.setItem('token', token);
     return { token, user };
   } catch (error) {
-    return rejectWithValue(error.response?.data?.message || 'Login gagal');
+    const errorMessage = error.response?.data?.message || error.message || 'Login gagal - Server tidak merespons';
+    console.error('[Auth] Login error:', errorMessage);
+    console.error('[Auth] Full error:', error);
+    return rejectWithValue(errorMessage);
   }
 });
 

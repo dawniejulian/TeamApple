@@ -1,6 +1,5 @@
 // frontend/src/pages/Sales/SalesPage.js
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
@@ -14,7 +13,6 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSales();
@@ -98,12 +96,20 @@ export default function SalesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Penjualan</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <FiPlus /> <span>Transaksi Baru</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => window.open('/customer-display', '_blank', 'noopener,noreferrer')}
+            className="btn-secondary"
+          >
+            Tampilan Pelanggan
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="btn-primary flex items-center space-x-2"
+          >
+            <FiPlus /> <span>Transaksi Baru</span>
+          </button>
+        </div>
       </div>
 
       {/* Export Buttons */}

@@ -23,7 +23,8 @@
     "cors": "^2.8.5",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "joi": "^17.11.1"
+    "joi": "^17.11.1",
+    "express-validator": "^7.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

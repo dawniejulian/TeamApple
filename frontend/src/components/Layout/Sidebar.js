@@ -1,6 +1,8 @@
 // frontend/src/components/Layout/Sidebar.js
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import {
   FiHome,
   FiShoppingCart,
@@ -9,24 +11,43 @@ import {
   FiPrinter,
   FiSettings,
   FiLogOut,
+  FiClock,
+  FiTruck,
+  FiMonitor,
 } from 'react-icons/fi';
+import { logoutUser } from '../../store/slices/authSlice';
+
+const ALL_MENU_ITEMS = [
+  { icon: FiHome,       label: 'Dashboard',      path: '/',               roles: ['ADMIN','MANAGER','STAFF','VIEWER'] },
+  { icon: FiBox,        label: 'Produk',          path: '/products',       roles: ['ADMIN','MANAGER'] },
+  { icon: FiShoppingCart, label: 'Stok',          path: '/inventory',      roles: ['ADMIN','MANAGER','STAFF'] },
+  { icon: FiTrendingUp, label: 'Penjualan',       path: '/sales',          roles: ['ADMIN','MANAGER','STAFF'] },
+  { icon: FiMonitor,    label: 'Display Pelanggan', path: '/customer-display', roles: ['ADMIN','MANAGER','STAFF'] },
+  { icon: FiClock,      label: 'Shift',           path: '/shifts',         roles: ['ADMIN','MANAGER','STAFF'] },
+  { icon: FiTruck,      label: 'Purchase Order',  path: '/purchase-orders',roles: ['ADMIN','MANAGER'] },
+  { icon: FiPrinter,    label: 'Cetak Struk',     path: '/receipt',        roles: ['ADMIN','MANAGER','STAFF'] },
+  { icon: FiTrendingUp, label: 'Laporan',          path: '/reports',        roles: ['ADMIN','MANAGER','VIEWER'] },
+  { icon: FiSettings,   label: 'Pengaturan',      path: '/settings',       roles: ['ADMIN'] },
+];
 
 export default function Sidebar({ isOpen, onToggle }) {
-  const menuItems = [
-    { icon: FiHome, label: 'Dashboard', path: '/' },
-    { icon: FiBox, label: 'Produk', path: '/products' },
-    { icon: FiShoppingCart, label: 'Stok', path: '/inventory' },
-    { icon: FiTrendingUp, label: 'Penjualan', path: '/sales' },
-    { icon: FiPrinter, label: 'Cetak Struk', path: '/receipt' },
-    { icon: FiTrendingUp, label: 'Laporan', path: '/reports' },
-    { icon: FiSettings, label: 'Pengaturan', path: '/settings' },
-  ];
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const role = user?.role || 'STAFF';
+  const menuItems = ALL_MENU_ITEMS.filter((item) => item.roles.includes(role));
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    toast.info('Anda telah logout');
+    navigate('/login');
+  };
 
   return (
     <aside
       className={`${
         isOpen ? 'w-64' : 'w-20'
-      } bg-gray-800 text-white transition-all duration-300`}
+      } bg-gray-800 text-white transition-all duration-300 min-h-screen flex flex-col`}
     >
       <div className="p-6">
         <h1 className={`font-bold text-xl ${isOpen ? '' : 'text-center'}`}>
@@ -34,12 +55,12 @@ export default function Sidebar({ isOpen, onToggle }) {
         </h1>
       </div>
 
-      <nav className="space-y-2 p-4">
+      <nav className="space-y-2 p-4 flex-1">
         {menuItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 transition"
+            className={`flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} p-3 rounded-lg hover:bg-gray-700 transition`}
             title={item.label}
           >
             <item.icon size={24} />
@@ -48,9 +69,10 @@ export default function Sidebar({ isOpen, onToggle }) {
         ))}
       </nav>
 
-      <div className="absolute bottom-6 left-0 right-0 p-4">
+      <div className="p-4">
         <button
-          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 transition w-full"
+          onClick={handleLogout}
+          className={`flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} p-3 rounded-lg hover:bg-gray-700 transition w-full`}
           title="Logout"
         >
           <FiLogOut size={24} />

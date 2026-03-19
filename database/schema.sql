@@ -306,6 +306,67 @@ CREATE INDEX idx_audit_user ON audit_logs(user_id);
 CREATE INDEX idx_audit_created ON audit_logs(created_at);
 
 -- ============================================================================
+-- 7. CASHIER SHIFTS & RECONCILIATION
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS cashier_shifts (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  opened_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  closed_at TIMESTAMP,
+  float_amount DECIMAL(12, 2) NOT NULL,
+  total_sales DECIMAL(12, 2) DEFAULT 0,
+  total_transactions INTEGER DEFAULT 0,
+  expected_amount DECIMAL(12, 2),
+  actual_amount DECIMAL(12, 2),
+  discrepancy DECIMAL(12, 2),
+  discrepancy_notes TEXT,
+  status VARCHAR(20) DEFAULT 'OPEN',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_cashier_shifts_user ON cashier_shifts(user_id);
+CREATE INDEX IF NOT EXISTS idx_cashier_shifts_opened ON cashier_shifts(opened_at);
+CREATE INDEX IF NOT EXISTS idx_cashier_shifts_status ON cashier_shifts(status);
+
+-- ============================================================================
+-- 8. PURCHASE ORDERS
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS purchase_orders (
+  id SERIAL PRIMARY KEY,
+  supplier_name VARCHAR(255) NOT NULL,
+  supplier_email VARCHAR(100),
+  supplier_phone VARCHAR(20),
+  total_amount DECIMAL(12, 2) DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'DRAFT',
+  expected_delivery_date DATE,
+  notes TEXT,
+  created_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_status ON purchase_orders(status);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_supplier ON purchase_orders(supplier_name);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_created ON purchase_orders(created_at);
+
+CREATE TABLE IF NOT EXISTS purchase_order_items (
+  id SERIAL PRIMARY KEY,
+  purchase_order_id INTEGER NOT NULL REFERENCES purchase_orders(id),
+  product_id INTEGER NOT NULL REFERENCES products(id),
+  quantity INTEGER NOT NULL,
+  unit_price DECIMAL(12, 2) NOT NULL,
+  quantity_received INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_purchase_order_items_po ON purchase_order_items(purchase_order_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_order_items_product ON purchase_order_items(product_id);
+
+-- ============================================================================
 -- SAMPLE DATA / SEEDS
 -- ============================================================================
 

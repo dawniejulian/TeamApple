@@ -5,10 +5,14 @@ import { toast } from 'react-toastify';
 
 export default function InventoryPage() {
   const [inventory, setInventory] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [stockForm, setStockForm] = useState({ product_id: '', quantity: '', notes: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchInventory();
+    fetchProducts();
   }, []);
 
   const fetchInventory = async () => {
@@ -23,9 +27,88 @@ export default function InventoryPage() {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const res = await api.get('/products');
+      setProducts(res.data.data || []);
+    } catch (error) {
+      toast.error('Gagal mengambil data produk');
+    }
+  };
+
+  const handleStockIn = async (e) => {
+    e.preventDefault();
+
+    if (!stockForm.product_id || !stockForm.quantity || Number(stockForm.quantity) <= 0) {
+      toast.error('Pilih produk dan isi quantity yang valid');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await api.post('/inventory/stock-in', {
+        product_id: Number(stockForm.product_id),
+        quantity: Number(stockForm.quantity),
+        notes: stockForm.notes || 'Tambah stok dari halaman stok'
+      });
+
+      toast.success('Stok berhasil ditambahkan');
+      setStockForm({ product_id: '', quantity: '', notes: '' });
+      fetchInventory();
+      fetchProducts();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Gagal menambah stok');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Manajemen Stok</h1>
+
+      <div className="card">
+        <h2 className="text-lg font-bold mb-3">Tambah Stok Cepat</h2>
+        <form onSubmit={handleStockIn} className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <select
+            className="form-input"
+            value={stockForm.product_id}
+            onChange={(e) => setStockForm({ ...stockForm, product_id: e.target.value })}
+            required
+          >
+            <option value="">Pilih Produk</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+
+          <input
+            type="number"
+            min="1"
+            className="form-input"
+            placeholder="Qty"
+            value={stockForm.quantity}
+            onChange={(e) => setStockForm({ ...stockForm, quantity: e.target.value })}
+            required
+          />
+
+          <input
+            type="text"
+            className="form-input"
+            placeholder="Catatan (opsional)"
+            value={stockForm.notes}
+            onChange={(e) => setStockForm({ ...stockForm, notes: e.target.value })}
+          />
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-primary"
+          >
+            {submitting ? 'Menyimpan...' : 'Tambah Stok'}
+          </button>
+        </form>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="card">
@@ -35,13 +118,13 @@ export default function InventoryPage() {
         <div className="card">
           <p className="text-gray-600">Stok Tersedia</p>
           <p className="text-3xl font-bold">
-            {inventory.reduce((sum, item) => sum + item.quantity_available, 0)}
+            {inventory.reduce((sum, item) => sum + Number(item.quantity_available || 0), 0)}
           </p>
         </div>
         <div className="card">
           <p className="text-gray-600">Stok Rusak</p>
           <p className="text-3xl font-bold text-red-600">
-            {inventory.reduce((sum, item) => sum + item.quantity_damaged, 0)}
+            {inventory.reduce((sum, item) => sum + Number(item.quantity_damaged || 0), 0)}
           </p>
         </div>
       </div>
@@ -74,7 +157,7 @@ export default function InventoryPage() {
                   <td className="py-3">{item.quantity_reserved}</td>
                   <td className="py-3 text-red-600">{item.quantity_damaged}</td>
                   <td className="py-3 font-bold">
-                    {item.quantity_available + item.quantity_reserved + item.quantity_damaged}
+                    {Number(item.quantity_available || 0) + Number(item.quantity_reserved || 0) + Number(item.quantity_damaged || 0)}
                   </td>
                 </tr>
               ))}

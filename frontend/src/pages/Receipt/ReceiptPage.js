@@ -118,83 +118,72 @@ export default function ReceiptPage() {
                 style={{
                   width: '80mm',
                   margin: '0 auto',
-                  fontFamily: 'Arial, sans-serif',
-                  fontSize: '11px',
-                  lineHeight: '1.4',
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  lineHeight: '1.3',
                 }}
               >
-                {/* Header dengan Design Menarik */}
-                <div className="text-center mb-4 pb-3 border-b-4 border-blue-600">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">💎 KASIRIN</div>
-                  <div className="text-xs font-semibold text-gray-700">Toko Apple Terpercaya</div>
-                  <div className="text-xs text-gray-600 mt-1">
+                {/* Header */}
+                <div className="text-center mb-2">
+                  <div className="text-lg font-bold text-blue-600 mb-1">💎 KASIRIN</div>
+                  <div className="text-xs font-semibold">Toko Apple Terpercaya</div>
+                  <div className="text-xs text-gray-700">
                     <div>Jl. Merdeka No. 123, Jakarta</div>
                     <div>Telp: 0812-3456-7890</div>
                     <div>Email: info@kasirin.com</div>
                   </div>
                 </div>
 
+                {/* Separator */}
+                <div className="border-b-4 border-blue-600 my-2"></div>
+
                 {/* Transaction Details */}
-                <div className="mb-4 pb-3 border-b-2 border-dashed border-gray-400">
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="font-semibold">Invoice:</span>
-                      <div className="font-mono font-bold text-blue-600">
-                        {saleDetails.sales_number || saleDetails.invoice_number}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-semibold">Tanggal:</span>
-                      <div>
-                        {new Date(saleDetails.created_at).toLocaleDateString('id-ID')}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="font-semibold">Waktu:</span>
-                      <div>
-                        {new Date(saleDetails.created_at).toLocaleTimeString('id-ID')}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-semibold">Kasir:</span>
-                      <div>Admin</div>
-                    </div>
+                <div className="text-xs mb-2 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Invoice:</span>
+                    <span className="font-bold text-blue-600">{saleDetails.sales_number || saleDetails.invoice_number}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tanggal:</span>
+                    <span>{new Date(saleDetails.created_at).toLocaleDateString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Waktu:</span>
+                    <span>{new Date(saleDetails.created_at).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Kasir:</span>
+                    <span>Admin</span>
                   </div>
                 </div>
+
+                {/* Separator */}
+                <div className="border-b-2 border-black my-2"></div>
 
                 {/* Items Header */}
-                <div className="text-xs font-bold text-gray-700 mb-2 pb-2 border-b border-gray-400">
-                  <div className="grid grid-cols-12 gap-1">
-                    <div className="col-span-6">ITEM</div>
-                    <div className="col-span-2 text-center">QTY</div>
-                    <div className="col-span-2 text-right">HARGA</div>
-                    <div className="col-span-2 text-right">TOTAL</div>
+                <div className="text-xs font-bold mb-1">
+                  <div style={{display: 'grid', gridTemplateColumns: '1fr 0.6fr 1.2fr 1fr', gap: '4px'}}>
+                    <div>ITEM</div>
+                    <div className="text-center">QTY</div>
+                    <div className="text-right">HARGA</div>
+                    <div className="text-right">TOTAL</div>
                   </div>
                 </div>
 
+                {/* Separator */}
+                <div className="border-b-2 border-gray-400 my-1"></div>
+
                 {/* Items */}
-                <div className="mb-4 pb-3 border-b-2 border-dashed border-gray-400 space-y-1">
+                <div className="text-xs mb-2 space-y-1">
                   {saleDetails.items && saleDetails.items.length > 0 ? (
                     saleDetails.items.map((item, idx) => (
-                      <div key={idx} className="text-xs">
-                        <div className="font-semibold text-gray-800">
-                          {item.product_name}
-                        </div>
-                        <div className="grid grid-cols-12 gap-1 text-gray-600">
-                          <div className="col-span-6 text-xs">
-                            Rp {parseInt(item.price || item.unit_price).toLocaleString('id-ID')}
-                          </div>
-                          <div className="col-span-2 text-center">
-                            {item.quantity}x
-                          </div>
-                          <div className="col-span-2 text-right">
-                            {parseFloat(item.discount_percent || 0) > 0 && (
-                              <div className="text-red-500">-{item.discount_percent}%</div>
-                            )}
-                          </div>
-                          <div className="col-span-2 text-right font-semibold text-gray-800">
-                            Rp {parseInt(item.subtotal).toLocaleString('id-ID')}
-                          </div>
+                      <div key={idx}>
+                        <div className="font-semibold">{item.product_name}</div>
+                        <div style={{display: 'grid', gridTemplateColumns: '1fr 0.6fr 1.2fr 1fr', gap: '4px', marginTop: '2px'}}>
+                          <div>Rp {parseInt(item.price || item.unit_price).toLocaleString('id-ID')}</div>
+                          <div className="text-center">{item.quantity}x</div>
+                          <div className="text-right"></div>
+                          <div className="text-right font-semibold">Rp {parseInt(item.subtotal).toLocaleString('id-ID')}</div>
                         </div>
                       </div>
                     ))
@@ -203,80 +192,64 @@ export default function ReceiptPage() {
                   )}
                 </div>
 
+                {/* Separator */}
+                <div className="border-b-2 border-black my-2"></div>
+
                 {/* Totals Section */}
-                <div className="mb-4 space-y-2 text-xs">
-                  <div className="flex justify-between pt-2">
+                <div className="text-xs mb-2 space-y-1">
+                  <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-semibold">
-                      Rp {parseInt(saleDetails.subtotal || 0).toLocaleString('id-ID')}
-                    </span>
+                    <span className="font-semibold">Rp {parseInt(saleDetails.subtotal || 0).toLocaleString('id-ID')}</span>
                   </div>
 
                   {saleDetails.discount_amount > 0 && (
                     <div className="flex justify-between text-red-600">
                       <span>Diskon</span>
-                      <span className="font-semibold">
-                        -Rp {parseInt(saleDetails.discount_amount).toLocaleString('id-ID')}
-                      </span>
+                      <span className="font-semibold">-Rp {parseInt(saleDetails.discount_amount).toLocaleString('id-ID')}</span>
                     </div>
                   )}
 
                   {saleDetails.tax_amount > 0 && (
                     <div className="flex justify-between text-green-600">
-                      <span>Pajak (PPn)</span>
-                      <span className="font-semibold">
-                        Rp {parseInt(saleDetails.tax_amount).toLocaleString('id-ID')}
-                      </span>
+                      <span>Pajak</span>
+                      <span className="font-semibold">Rp {parseInt(saleDetails.tax_amount).toLocaleString('id-ID')}</span>
                     </div>
                   )}
 
-                  <div className="flex justify-between py-2 px-2 bg-blue-50 rounded border-2 border-blue-200 font-bold text-sm">
+                  <div className="flex justify-between py-1 px-1 border-2 border-blue-400 rounded font-bold text-sm my-1">
                     <span>TOTAL BAYAR</span>
-                    <span className="text-blue-600">
-                      Rp {parseInt(saleDetails.total_amount).toLocaleString('id-ID')}
-                    </span>
+                    <span className="text-blue-600">Rp {parseInt(saleDetails.total_amount).toLocaleString('id-ID')}</span>
                   </div>
                 </div>
 
                 {/* Payment Details */}
-                <div className="mb-4 pb-3 border-b-2 border-dashed border-gray-400 text-xs space-y-1">
+                <div className="text-xs mb-2 space-y-1">
                   <div className="flex justify-between">
-                    <span className="font-semibold">Metode Bayar:</span>
-                    <span className="bg-yellow-100 px-2 py-1 rounded">
-                      {saleDetails.payment_method || 'TUNAI'}
-                    </span>
+                    <span>Metode Bayar:</span>
+                    <span className="font-semibold">{saleDetails.payment_method || 'CASH'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-semibold">Jumlah Bayar:</span>
-                    <span>
-                      Rp {parseInt(saleDetails.paid_amount).toLocaleString('id-ID')}
-                    </span>
+                    <span>Jumlah Bayar:</span>
+                    <span className="font-semibold">Rp {parseInt(saleDetails.paid_amount).toLocaleString('id-ID')}</span>
                   </div>
-                  {saleDetails.change_amount > 0 && (
-                    <div className="flex justify-between bg-green-50 p-1 rounded">
-                      <span className="font-semibold">Kembalian:</span>
-                      <span className="font-bold text-green-600">
-                        Rp {parseInt(saleDetails.change_amount).toLocaleString('id-ID')}
-                      </span>
-                    </div>
-                  )}
                 </div>
 
+                {/* Separator */}
+                <div className="border-b-2 border-black my-2"></div>
+
                 {/* Footer */}
-                <div className="text-center text-xs space-y-1 pt-2">
-                  <div className="font-semibold text-gray-800">
-                    ✓ Terima Kasih Telah Berbelanja ✓
+                <div className="text-center text-xs space-y-1">
+                  <div className="font-bold">✓ Terima Kasih Telah Berbelanja ✓</div>
+                  <div className="text-gray-700 italic text-xs">
+                    Barang yang sudah dibeli tidak dapat<br/>ditukar/dikembalikan
                   </div>
-                  <div className="text-gray-600 italic">
-                    Barang yang sudah dibeli tidak dapat ditukar/dikembalikan
-                  </div>
-                  <div className="text-gray-600">
+                  <div className="text-gray-700 text-xs">
                     Simpan struk ini untuk garansi produk
                   </div>
-                  <div className="pt-2 border-t border-gray-400 text-gray-500 text-xs">
-                    <div>⭐ Powered by KASIRIN ⭐</div>
-                    <div>Sistem Manajemen Stok & Penjualan</div>
-                    <div>Printed: {new Date().toLocaleString('id-ID')}</div>
+                  <div className="border-t border-gray-400 pt-1 mt-1">
+                    <div className="text-yellow-600">⭐ Powered by KASIRIN ⭐</div>
+                    <div className="text-gray-600">Sistem Manajemen Stok & Penjualan</div>
+                    <div className="text-gray-600">Printed: {new Date().toLocaleString('id-ID')}</div>
                   </div>
                 </div>
               </div>
@@ -293,36 +266,35 @@ export default function ReceiptPage() {
       <style>{`
         @media print {
           * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
           }
           
           body {
-            background: white;
-            margin: 0;
-            padding: 0;
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
           
           #receipt-content {
             width: 80mm !important;
             height: auto !important;
             margin: 0 !important;
-            padding: 6mm !important;
+            padding: 4mm !important;
             border: none !important;
             box-shadow: none !important;
             background: white !important;
-            font-family: Arial, sans-serif !important;
-            font-size: 11px !important;
-            line-height: 1.4 !important;
+            font-family: monospace !important;
+            font-size: 12px !important;
+            line-height: 1.3 !important;
             color: black !important;
-            page-break-after: avoid;
+            page-break-after: avoid !important;
           }
           
           #receipt-content div {
-            width: 100%;
-            margin: 0;
-            padding: 0;
+            margin: inherit !important;
+            padding: inherit !important;
           }
           
           #receipt-content .text-center {
@@ -337,16 +309,32 @@ export default function ReceiptPage() {
             justify-content: space-between !important;
           }
           
-          #receipt-content .grid {
-            display: grid !important;
+          #receipt-content .border-b-4 {
+            border-bottom: 4px solid #2563eb !important;
           }
           
-          #receipt-content .grid-cols-2 {
-            grid-template-columns: 1fr 1fr !important;
+          #receipt-content .border-b-2 {
+            border-bottom: 2px solid #000 !important;
           }
           
-          #receipt-content .grid-cols-12 {
-            grid-template-columns: repeat(12, 1fr) !important;
+          #receipt-content .border-black {
+            border-color: #000 !important;
+          }
+          
+          #receipt-content .text-xs {
+            font-size: 11px !important;
+          }
+          
+          #receipt-content .text-lg {
+            font-size: 14px !important;
+          }
+          
+          #receipt-content .font-bold {
+            font-weight: bold !important;
+          }
+          
+          #receipt-content .font-semibold {
+            font-weight: 600 !important;
           }
           
           #receipt-content .col-span-6 {

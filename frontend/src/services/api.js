@@ -58,7 +58,21 @@ instance.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('[API] Response error:', error.response?.status, error.response?.data || error.message);
+    // Log detailed error information
+    console.error('[API] Response error details:');
+    console.error('  - Status:', error.response?.status);
+    console.error('  - Data:', error.response?.data);
+    console.error('  - Message:', error.message);
+    console.error('  - URL:', error.config?.url);
+    console.error('  - Method:', error.config?.method);
+    
+    // Network error or server unreachable
+    if (!error.response) {
+      console.error('[API] Network Error - Server may be unreachable');
+      console.error('[API] Trying to reach:', error.config?.url);
+      console.error('[API] Base URL:', API_BASE_URL);
+    }
+    
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token');
       if (window.location.pathname !== '/login') {

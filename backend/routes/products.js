@@ -76,10 +76,17 @@ router.get('/', async (req, res) => {
     const { category_id, condition_id, search } = req.query;
     
     let query = `
-      SELECT p.*, c.name as category_name, pc.name as condition_name
+      SELECT
+        p.*, c.name as category_name, pc.name as condition_name,
+        COALESCE(inv.stock_total, 0) AS stock_total
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN product_conditions pc ON p.condition_id = pc.id
+      LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(i.quantity_available), 0)::int AS stock_total
+        FROM inventory i
+        WHERE i.product_id = p.id
+      ) inv ON true
       WHERE p.is_active = true
     `;
     
@@ -130,10 +137,17 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
 
     const result = await pool.query(`
-      SELECT p.*, c.name as category_name, pc.name as condition_name
+      SELECT
+        p.*, c.name as category_name, pc.name as condition_name,
+        COALESCE(inv.stock_total, 0) AS stock_total
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN product_conditions pc ON p.condition_id = pc.id
+      LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(i.quantity_available), 0)::int AS stock_total
+        FROM inventory i
+        WHERE i.product_id = p.id
+      ) inv ON true
       WHERE p.id = $1
     `, [id]);
 
@@ -170,6 +184,8 @@ router.get('/:id', async (req, res) => {
  * @access  Private (ADMIN/MANAGER)
  */
 router.post('/', async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const {
       sku,
@@ -179,8 +195,18 @@ router.post('/', async (req, res) => {
       buy_price,
       selling_price,
       description,
-      specifications
+      specifications,
+      initial_stock
     } = req.body;
+
+    const parsedInitialStock = Number(initial_stock ?? 0);
+
+    if (Number.isNaN(parsedInitialStock) || parsedInitialStock < 0) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'Stok awal tidak valid'
+      });
+    }
 
     if (!sku || !name || !category_id || !condition_id) {
       return res.status(400).json({
@@ -189,12 +215,39 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const result = await pool.query(`
+    await client.query('BEGIN');
+
+    const result = await client.query(`
       INSERT INTO products 
       (sku, name, category_id, condition_id, buy_price, selling_price, description, specifications)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `, [sku, name, category_id, condition_id, buy_price, selling_price, description, JSON.stringify(specifications)]);
+
+    const warehouseResult = await client.query(`
+      INSERT INTO warehouse_locations (name, description)
+      VALUES ('Gudang Utama', 'Lokasi default sistem')
+      ON CONFLICT (name)
+      DO UPDATE SET description = warehouse_locations.description
+      RETURNING id
+    `);
+
+    await client.query(`
+      INSERT INTO inventory (product_id, warehouse_location_id, quantity_available)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (product_id, warehouse_location_id)
+      DO UPDATE SET quantity_available = EXCLUDED.quantity_available
+    `, [result.rows[0].id, warehouseResult.rows[0].id, parsedInitialStock]);
+
+    if (parsedInitialStock > 0) {
+      await client.query(`
+        INSERT INTO stock_movements 
+        (product_id, warehouse_location_id, movement_type, quantity, reference_type, notes, created_by)
+        VALUES ($1, $2, 'STOCK_IN', $3, 'INITIAL', 'Stok awal saat buat produk', $4)
+      `, [result.rows[0].id, warehouseResult.rows[0].id, parsedInitialStock, req.user?.id || 1]);
+    }
+
+    await client.query('COMMIT');
 
     res.status(201).json({
       status: 'SUCCESS',
@@ -202,10 +255,13 @@ router.post('/', async (req, res) => {
       data: result.rows[0]
     });
   } catch (error) {
+    await client.query('ROLLBACK');
     res.status(500).json({
       status: 'ERROR',
       message: error.message
     });
+  } finally {
+    client.release();
   }
 });
 

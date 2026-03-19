@@ -63,14 +63,26 @@ app.get('/health', (req, res) => {
 // Auth Routes
 app.use('/api/auth', require('./routes/auth'));
 
+// Users Routes
+app.use('/api/users', require('./routes/users'));
+
 // Products Routes
 app.use('/api/products', require('./routes/products'));
 
 // Inventory Routes
 app.use('/api/inventory', require('./routes/inventory'));
 
+// Shifts Routes
+app.use('/api/shifts', require('./routes/shifts'));
+
+// Purchase Orders Routes
+app.use('/api/purchase-orders', require('./routes/purchase-orders'));
+
 // Sales Routes
 app.use('/api/sales', require('./routes/sales'));
+
+// Reports Routes
+app.use('/api/reports', require('./routes/reports'));
 
 // Dashboard Routes
 app.use('/api/dashboard', require('./routes/dashboard'));

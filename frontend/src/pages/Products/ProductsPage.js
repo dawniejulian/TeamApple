@@ -58,7 +58,8 @@ export default function ProductsPage() {
         { header: 'No', dataKey: 'no' },
         { header: 'Nama Produk', dataKey: 'name' },
         { header: 'SKU', dataKey: 'sku' },
-        { header: 'Kategori', dataKey: 'category_id' },
+        { header: 'Kategori', dataKey: 'category_name' },
+        { header: 'Stok', dataKey: 'stock_total' },
         { header: 'Harga Beli', dataKey: 'purchase_price' },
         { header: 'Harga Jual', dataKey: 'selling_price' },
       ];
@@ -67,7 +68,8 @@ export default function ProductsPage() {
         index + 1,
         product.name || '-',
         product.sku || '-',
-        product.category_id || '-',
+        product.category_name || '-',
+        product.stock_total || 0,
         `Rp ${product.buy_price?.toLocaleString('id-ID') || '0'}`,
         `Rp ${product.selling_price?.toLocaleString('id-ID') || '0'}`,
       ]);
@@ -89,7 +91,8 @@ export default function ProductsPage() {
         { header: 'No', dataKey: 'no' },
         { header: 'Nama Produk', dataKey: 'name' },
         { header: 'SKU', dataKey: 'sku' },
-        { header: 'Kategori', dataKey: 'category_id' },
+        { header: 'Kategori', dataKey: 'category_name' },
+        { header: 'Stok', dataKey: 'stock_total' },
         { header: 'Harga Beli', dataKey: 'purchase_price' },
         { header: 'Harga Jual', dataKey: 'selling_price' },
       ];
@@ -98,7 +101,8 @@ export default function ProductsPage() {
         no: index + 1,
         name: product.name || '-',
         sku: product.sku || '-',
-        category_id: product.category_id || '-',
+        category_name: product.category_name || '-',
+        stock_total: product.stock_total || 0,
         purchase_price: product.buy_price || '0',
         selling_price: product.selling_price || '0',
       }));
@@ -170,6 +174,7 @@ export default function ProductsPage() {
                 <th className="pb-3">SKU</th>
                 <th className="pb-3">Nama</th>
                 <th className="pb-3">Kategori</th>
+                <th className="pb-3">Stok</th>
                 <th className="pb-3">Harga Beli</th>
                 <th className="pb-3">Harga Jual</th>
                 <th className="pb-3 text-center">Aksi</th>
@@ -180,7 +185,8 @@ export default function ProductsPage() {
                 <tr key={product.id} className="border-b hover:bg-gray-50">
                   <td className="py-3">{product.sku}</td>
                   <td className="py-3">{product.name}</td>
-                  <td className="py-3">{product.category_id}</td>
+                  <td className="py-3">{product.category_name || '-'}</td>
+                  <td className="py-3 font-semibold">{product.stock_total || 0}</td>
                   <td className="py-3">Rp {product.buy_price?.toLocaleString('id-ID') || 0}</td>
                   <td className="py-3 font-semibold">
                     Rp {product.selling_price?.toLocaleString('id-ID') || 0}

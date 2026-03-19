@@ -12,6 +12,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
     description: '',
     buy_price: '',
     selling_price: '',
+    initial_stock: '0',
   });
   const [categories, setCategories] = useState([]);
   const [conditions, setConditions] = useState([]);
@@ -52,6 +53,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
         buy_price: parseFloat(formData.buy_price) || 0,
         selling_price: parseFloat(formData.selling_price),
         description: formData.description,
+        initial_stock: parseInt(formData.initial_stock || '0', 10),
       });
       toast.success('Produk berhasil ditambahkan');
       setFormData({
@@ -62,6 +64,7 @@ export default function AddProductModal({ onClose, onSuccess }) {
         description: '',
         buy_price: '',
         selling_price: '',
+        initial_stock: '0',
       });
       onSuccess?.();
       onClose();
@@ -156,6 +159,18 @@ export default function AddProductModal({ onClose, onSuccess }) {
               className="form-input"
               step="0.01"
               required
+            />
+          </div>
+
+          <div>
+            <label className="form-label">Stok Awal</label>
+            <input
+              type="number"
+              name="initial_stock"
+              value={formData.initial_stock}
+              onChange={handleChange}
+              className="form-input"
+              min="0"
             />
           </div>
 
