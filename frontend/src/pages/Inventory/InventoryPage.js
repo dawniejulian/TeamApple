@@ -65,10 +65,10 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Manajemen Stok</h1>
+      <h1 className="text-3xl font-bold page-title section-enter">Manajemen Stok</h1>
 
-      <div className="card">
-        <h2 className="text-lg font-bold mb-3">Tambah Stok Cepat</h2>
+      <div className="card section-enter">
+        <h2 className="text-lg font-bold mb-3 text-blue-950">Tambah Stok Cepat</h2>
         <form onSubmit={handleStockIn} className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <select
             className="form-input"
@@ -112,17 +112,17 @@ export default function InventoryPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="card">
-          <p className="text-gray-600">Total Produk</p>
-          <p className="text-3xl font-bold">{inventory.length}</p>
+          <p className="text-blue-800/75">Total Produk</p>
+          <p className="text-3xl font-bold text-blue-950">{inventory.length}</p>
         </div>
         <div className="card">
-          <p className="text-gray-600">Stok Tersedia</p>
-          <p className="text-3xl font-bold">
+          <p className="text-blue-800/75">Stok Tersedia</p>
+          <p className="text-3xl font-bold text-blue-950">
             {inventory.reduce((sum, item) => sum + Number(item.quantity_available || 0), 0)}
           </p>
         </div>
         <div className="card">
-          <p className="text-gray-600">Stok Rusak</p>
+          <p className="text-blue-800/75">Stok Rusak</p>
           <p className="text-3xl font-bold text-red-600">
             {inventory.reduce((sum, item) => sum + Number(item.quantity_damaged || 0), 0)}
           </p>
@@ -135,7 +135,7 @@ export default function InventoryPage() {
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b">
+              <tr className="table-head">
                 <th className="pb-3">Produk</th>
                 <th className="pb-3">SKU</th>
                 <th className="pb-3">Lokasi</th>
@@ -147,7 +147,7 @@ export default function InventoryPage() {
             </thead>
             <tbody>
               {inventory.map((item) => (
-                <tr key={item.id} className="border-b hover:bg-gray-50">
+                <tr key={item.id} className="table-row">
                   <td className="py-3">{item.product_name}</td>
                   <td className="py-3">{item.sku}</td>
                   <td className="py-3">{item.warehouse_name}</td>

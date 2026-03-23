@@ -1,6 +1,5 @@
 // frontend/src/pages/Reports/ReportsPage.js
-import React, { useEffect, useState } from 'react';
-import { FiDownload } from 'react-icons/fi';
+import React, { useCallback, useEffect, useState } from 'react';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 
@@ -17,11 +16,7 @@ export default function ReportsPage() {
     to: new Date().toISOString().split('T')[0]
   });
 
-  useEffect(() => {
-    fetchReports();
-  }, [activeTab, dateRange]);
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     try {
       switch(activeTab) {
@@ -45,26 +40,24 @@ export default function ReportsPage() {
           const invRes = await api.get('/reports/inventory/valuation');
           setInventoryReport(invRes.data.data);
           break;
+        default:
+          break;
       }
     } catch (error) {
       toast.error('Gagal mengambil laporan');
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, dateRange]);
 
-  const handleExportPDF = async () => {
-    // Not implemented in this version
-  };
-
-  const handleExportExcel = async () => {
-    // Not implemented in this version
-  };
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Laporan & Analitik</h1>
+        <h1 className="text-3xl font-bold page-title section-enter">Laporan & Analitik</h1>
       </div>
 
       {/* Date Range Filter - hanya untuk tab yang bukan dashboard dan inventory */}
@@ -77,23 +70,23 @@ export default function ReportsPage() {
                 type="date"
                 value={dateRange.from}
                 onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="form-input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Hingga Tanggal</label>
+              <label className="form-label mb-2">Hingga Tanggal</label>
               <input
                 type="date"
                 value={dateRange.to}
                 onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="form-input"
               />
             </div>
             <div className="flex items-end">
               <button
                 onClick={fetchReports}
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="w-full btn-primary disabled:opacity-50"
               >
                 Refresh
               </button>
@@ -103,15 +96,15 @@ export default function ReportsPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b">
+      <div className="flex gap-2 border-b border-blue-100 pb-2">
         {['dashboard', 'sales', 'cashier', 'payment', 'inventory'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 font-semibold transition ${
+            className={`tab-pill ${
               activeTab === tab
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'tab-pill-active'
+                : ''
             }`}
           >
             {tab === 'dashboard' && 'Ringkasan'}
@@ -133,29 +126,29 @@ export default function ReportsPage() {
           {/* Dashboard Overview */}
           {activeTab === 'dashboard' && dashboardData && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="card bg-blue-50">
-                <p className="text-gray-600 text-sm">Penjualan Hari Ini</p>
+              <div className="card">
+                <p className="text-blue-800/75 text-sm">Penjualan Hari Ini</p>
                 <p className="text-2xl font-bold text-blue-600 mt-2">
                   Rp {parseInt(dashboardData.today?.revenue || 0).toLocaleString('id-ID')}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">{dashboardData.today?.transactions} transaksi</p>
+                <p className="text-xs text-blue-700/70 mt-1">{dashboardData.today?.transactions} transaksi</p>
               </div>
-              <div className="card bg-green-50">
-                <p className="text-gray-600 text-sm">Penjualan Bulan Ini</p>
+              <div className="card">
+                <p className="text-blue-800/75 text-sm">Penjualan Bulan Ini</p>
                 <p className="text-2xl font-bold text-green-600 mt-2">
                   Rp {parseInt(dashboardData.month?.revenue || 0).toLocaleString('id-ID')}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">{dashboardData.month?.transactions} transaksi</p>
+                <p className="text-xs text-blue-700/70 mt-1">{dashboardData.month?.transactions} transaksi</p>
               </div>
-              <div className="card bg-orange-50">
-                <p className="text-gray-600 text-sm">Stok Rendah</p>
+              <div className="card">
+                <p className="text-blue-800/75 text-sm">Stok Rendah</p>
                 <p className="text-2xl font-bold text-orange-600 mt-2">{dashboardData.alerts?.low_stock}</p>
-                <p className="text-xs text-gray-500 mt-1">produk</p>
+                <p className="text-xs text-blue-700/70 mt-1">produk</p>
               </div>
-              <div className="card bg-purple-50">
-                <p className="text-gray-600 text-sm">PO Terbuka</p>
+              <div className="card">
+                <p className="text-blue-800/75 text-sm">PO Terbuka</p>
                 <p className="text-2xl font-bold text-purple-600 mt-2">{dashboardData.alerts?.open_pos}</p>
-                <p className="text-xs text-gray-500 mt-1">purchase order</p>
+                <p className="text-xs text-blue-700/70 mt-1">purchase order</p>
               </div>
             </div>
           )}
@@ -165,23 +158,23 @@ export default function ReportsPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-4 gap-4">
                 <div className="card">
-                  <p className="text-gray-600 text-sm">Total Penjualan</p>
+                  <p className="text-blue-800/75 text-sm">Total Penjualan</p>
                   <p className="text-2xl font-bold text-green-600">
                     Rp {parseInt(salesReport.total_revenue || 0).toLocaleString('id-ID')}
                   </p>
                 </div>
                 <div className="card">
-                  <p className="text-gray-600 text-sm">Total Transaksi</p>
-                  <p className="text-2xl font-bold">{salesReport.total_transactions || 0}</p>
+                  <p className="text-blue-800/75 text-sm">Total Transaksi</p>
+                  <p className="text-2xl font-bold text-blue-950">{salesReport.total_transactions || 0}</p>
                 </div>
                 <div className="card">
-                  <p className="text-gray-600 text-sm">Rata-rata Transaksi</p>
-                  <p className="text-2xl font-bold">
+                  <p className="text-blue-800/75 text-sm">Rata-rata Transaksi</p>
+                  <p className="text-2xl font-bold text-blue-950">
                     Rp {Math.round((salesReport.total_revenue || 0) / (salesReport.total_transactions || 1)).toLocaleString('id-ID')}
                   </p>
                 </div>
                 <div className="card">
-                  <p className="text-gray-600 text-sm">Total Diskon</p>
+                  <p className="text-blue-800/75 text-sm">Total Diskon</p>
                   <p className="text-2xl font-bold text-orange-600">
                     Rp {parseInt(salesReport.total_discounts || 0).toLocaleString('id-ID')}
                   </p>
@@ -195,7 +188,7 @@ export default function ReportsPage() {
             <div className="card overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b">
+                  <tr className="table-head">
                     <th className="pb-3 font-semibold">Nama Kasir</th>
                     <th className="pb-3 font-semibold">Transaksi</th>
                     <th className="pb-3 font-semibold">Total Penjualan</th>
@@ -205,7 +198,7 @@ export default function ReportsPage() {
                 </thead>
                 <tbody>
                   {cashierPerformance.map((cashier) => (
-                    <tr key={cashier.id} className="border-b hover:bg-gray-50">
+                    <tr key={cashier.id} className="table-row">
                       <td className="py-3 font-semibold">{cashier.cashier_name}</td>
                       <td className="py-3">{cashier.transaction_count || 0}</td>
                       <td className="py-3">Rp {parseInt(cashier.total_sales || 0).toLocaleString('id-ID')}</td>
@@ -227,11 +220,11 @@ export default function ReportsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {paymentReport.map((payment, idx) => (
                 <div key={idx} className="card">
-                  <p className="text-gray-600 text-sm font-semibold">{payment.payment_method}</p>
-                  <p className="text-2xl font-bold mt-3">
+                  <p className="text-blue-800/75 text-sm font-semibold">{payment.payment_method}</p>
+                  <p className="text-2xl font-bold mt-3 text-blue-950">
                     Rp {parseInt(payment.total_amount || 0).toLocaleString('id-ID')}
                   </p>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-sm text-blue-700/75 mt-2">
                     {payment.transaction_count || 0} transaksi
                   </p>
                 </div>
@@ -242,18 +235,18 @@ export default function ReportsPage() {
           {/* Inventory Valuation */}
           {activeTab === 'inventory' && inventoryReport && (
             <div className="space-y-4">
-              <div className="card bg-blue-50">
-                <p className="text-gray-600 text-sm">Total Valuasi Stok</p>
+              <div className="card">
+                <p className="text-blue-800/75 text-sm">Total Valuasi Stok</p>
                 <p className="text-3xl font-bold text-blue-600 mt-2">
                   Rp {parseInt(inventoryReport.total_valuation || 0).toLocaleString('id-ID')}
                 </p>
               </div>
 
               <div className="card overflow-x-auto">
-                <h3 className="text-lg font-bold mb-4">Valuasi per Produk</h3>
+                <h3 className="text-lg font-bold mb-4 text-blue-950">Valuasi per Produk</h3>
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b">
+                    <tr className="table-head">
                       <th className="pb-3 font-semibold">Produk</th>
                       <th className="pb-3 font-semibold">Qty</th>
                       <th className="pb-3 font-semibold">Harga Beli</th>
@@ -262,7 +255,7 @@ export default function ReportsPage() {
                   </thead>
                   <tbody>
                     {inventoryReport.items?.map((item, idx) => (
-                      <tr key={idx} className="border-b hover:bg-gray-50">
+                      <tr key={idx} className="table-row">
                         <td className="py-3">{item.product_name}</td>
                         <td className="py-3 font-semibold">{item.quantity || 0}</td>
                         <td className="py-3">Rp {parseInt(item.purchase_price || 0).toLocaleString('id-ID')}</td>

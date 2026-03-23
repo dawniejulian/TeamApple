@@ -57,13 +57,13 @@ export default function ReceiptPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Cetak Struk</h1>
+      <h1 className="text-3xl font-bold page-title section-enter">Cetak Struk</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Daftar Penjualan */}
         <div className="lg:col-span-1">
           <div className="card">
-            <h2 className="text-lg font-semibold mb-4">Daftar Penjualan</h2>
+            <h2 className="text-lg font-semibold mb-4 text-blue-950">Daftar Penjualan</h2>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {sales.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">Tidak ada data penjualan</p>
@@ -74,8 +74,8 @@ export default function ReceiptPage() {
                     onClick={() => handleSelectSale(sale.id)}
                     className={`w-full text-left p-3 rounded-lg transition ${
                       selectedSale === sale.id
-                        ? 'bg-blue-100 border-2 border-blue-500'
-                        : 'bg-gray-100 hover:bg-gray-200 border-2 border-transparent'
+                        ? 'bg-blue-100/80 border-2 border-blue-500'
+                        : 'bg-white/60 hover:bg-white border-2 border-blue-100/70'
                     }`}
                   >
                     <div className="font-semibold">No: {sale.sales_number}</div>
@@ -105,7 +105,7 @@ export default function ReceiptPage() {
                 </button>
                 <button
                   onClick={handleDownload}
-                  className="btn-secondary flex items-center gap-2"
+                  className="btn-export-green flex items-center gap-2"
                 >
                   <FiDownload /> Download
                 </button>
@@ -256,7 +256,7 @@ export default function ReceiptPage() {
             </div>
           ) : (
             <div className="card text-center py-12 text-gray-500">
-              <p>Pilih penjualan di sebelah kiri untuk melihat preview struk</p>
+              <p className="text-blue-700/75">Pilih penjualan di sebelah kiri untuk melihat preview struk</p>
             </div>
           )}
         </div>

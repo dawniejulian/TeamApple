@@ -110,36 +110,36 @@ export default function CustomerDisplayPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#23417d] via-[#355a9f] to-[#6388cf] text-white flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="text-2xl font-bold tracking-wide">Menyiapkan Tampilan Pelanggan...</div>
-          <p className="text-slate-300">Mengambil transaksi terbaru</p>
+          <p className="text-blue-100">Mengambil transaksi terbaru</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
-      <header className="px-8 py-6 border-b border-slate-700 bg-slate-950/80 backdrop-blur">
+    <div className="min-h-screen bg-gradient-to-br from-[#203d75] via-[#2f548f] to-[#5e84cc] text-white">
+      <header className="px-8 py-6 border-b border-blue-200/30 bg-[#1d3562]/70 backdrop-blur">
         <div className="flex items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-black tracking-wide">KASIRIN CUSTOMER VIEW</h1>
-            <p className="text-slate-300">
+            <p className="text-blue-100/90">
               {mode === 'ACTIVE_CART' ? 'Keranjang aktif sedang diproses kasir' : mode === 'PAID' ? 'Pembayaran berhasil' : 'Informasi transaksi terbaru untuk pelanggan'}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleBack}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-500 bg-slate-800 px-4 py-2 font-semibold text-slate-100 hover:bg-slate-700 transition"
+              className="inline-flex items-center gap-2 rounded-lg border border-blue-200/60 bg-white/15 px-4 py-2 font-semibold text-white hover:bg-white/25 transition"
             >
               <FiArrowLeft />
               Kembali
             </button>
             <button
               onClick={() => fetchLatestSale(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-cyan-500 px-4 py-2 font-semibold text-slate-950 hover:bg-cyan-400 transition"
+              className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 font-semibold text-blue-900 hover:bg-blue-50 transition"
             >
               <FiRefreshCw className={refreshing ? 'animate-spin' : ''} />
               Refresh
@@ -150,7 +150,7 @@ export default function CustomerDisplayPage() {
 
       <main className="p-6 sm:p-8">
         {error ? (
-          <div className="max-w-5xl mx-auto rounded-2xl border border-rose-400/30 bg-rose-500/10 p-8 text-center">
+          <div className="max-w-5xl mx-auto rounded-2xl border border-rose-200/40 bg-rose-500/20 backdrop-blur p-8 text-center">
             <div className="inline-flex items-center gap-2 text-rose-300 text-xl font-semibold">
               <FiWifiOff />
               {error}
@@ -158,60 +158,60 @@ export default function CustomerDisplayPage() {
           </div>
         ) : (
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <section className="lg:col-span-2 rounded-2xl bg-slate-800/80 p-6 border border-slate-700 shadow-2xl">
+            <section className="lg:col-span-2 rounded-2xl bg-[#1b315d]/65 p-6 border border-blue-200/30 shadow-2xl backdrop-blur">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-2xl font-bold">Detail Belanja</h2>
-                <span className="text-slate-300">{sale?.invoice_number || '-'}</span>
+                <span className="text-blue-100">{sale?.invoice_number || '-'}</span>
               </div>
 
               <div className="space-y-3">
                 {(sale?.items || []).map((item, idx) => (
                   <div
                     key={`${item.product_id}-${idx}`}
-                    className="rounded-xl bg-slate-900/70 border border-slate-700 px-4 py-3 flex items-center justify-between"
+                    className="rounded-xl bg-[#13274d]/60 border border-blue-200/25 px-4 py-3 flex items-center justify-between"
                   >
                     <div>
                       <p className="font-semibold text-lg">{item.product_name}</p>
-                      <p className="text-slate-400 text-sm">{Number(item.quantity || 0)} x {formatCurrency(item.unit_price || item.price)}</p>
+                      <p className="text-blue-100/80 text-sm">{Number(item.quantity || 0)} x {formatCurrency(item.unit_price || item.price)}</p>
                     </div>
-                    <p className="text-xl font-bold text-cyan-300">{formatCurrency(item.subtotal)}</p>
+                    <p className="text-xl font-bold text-blue-100">{formatCurrency(item.subtotal)}</p>
                   </div>
                 ))}
               </div>
             </section>
 
-            <section className="rounded-2xl bg-slate-800/80 p-6 border border-slate-700 shadow-2xl space-y-4">
+            <section className="rounded-2xl bg-[#1b315d]/65 p-6 border border-blue-200/30 shadow-2xl backdrop-blur space-y-4">
               <h2 className="text-2xl font-bold">Ringkasan</h2>
-              <div className="rounded-xl bg-slate-900/70 border border-slate-700 p-4 space-y-2">
-                <div className="flex justify-between text-slate-300">
+              <div className="rounded-xl bg-[#13274d]/60 border border-blue-200/25 p-4 space-y-2">
+                <div className="flex justify-between text-blue-100/90">
                   <span>Total Item</span>
                   <span className="font-bold text-white">{itemCount}</span>
                 </div>
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-blue-100/90">
                   <span>Subtotal</span>
                   <span className="font-bold text-white">{formatCurrency(sale?.subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-blue-100/90">
                   <span>Diskon</span>
                   <span className="font-bold text-rose-300">-{formatCurrency(sale?.discount_amount)}</span>
                 </div>
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-blue-100/90">
                   <span>Pajak</span>
                   <span className="font-bold text-emerald-300">{formatCurrency(sale?.tax_amount)}</span>
                 </div>
-                <div className="h-px bg-slate-700 my-2" />
+                <div className="h-px bg-blue-200/35 my-2" />
                 <div className="flex justify-between text-2xl font-black">
                   <span>Total Bayar</span>
-                  <span className="text-cyan-300">{formatCurrency(sale?.total_amount)}</span>
+                  <span className="text-blue-100">{formatCurrency(sale?.total_amount)}</span>
                 </div>
               </div>
 
-              <div className="rounded-xl bg-cyan-500/15 border border-cyan-400/40 p-4">
-                <p className="text-cyan-200 text-sm">Metode Pembayaran</p>
-                <p className="text-xl font-bold text-cyan-100">{sale?.payment_method || '-'}</p>
+              <div className="rounded-xl bg-white/10 border border-blue-100/35 p-4">
+                <p className="text-blue-100 text-sm">Metode Pembayaran</p>
+                <p className="text-xl font-bold text-white">{sale?.payment_method || '-'}</p>
               </div>
 
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-blue-100/70">
                 Update terakhir: {updatedAt ? updatedAt.toLocaleTimeString('id-ID') : '-'}
               </p>
             </section>

@@ -1,6 +1,6 @@
 // frontend/src/components/Layout/Sidebar.js
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import {
@@ -47,35 +47,51 @@ export default function Sidebar({ isOpen, onToggle }) {
     <aside
       className={`${
         isOpen ? 'w-64' : 'w-20'
-      } bg-gray-800 text-white transition-all duration-300 min-h-screen flex flex-col`}
+      } glass-panel-soft text-[#2a467b] transition-all duration-300 min-h-screen flex flex-col m-3 mr-0 rounded-2xl border-blue-200/60 relative z-10`}
     >
-      <div className="p-6">
-        <h1 className={`font-bold text-xl ${isOpen ? '' : 'text-center'}`}>
-          {isOpen ? '💎 KASIRIN' : '💎'}
-        </h1>
+      <div className="p-5 pb-4 border-b border-blue-200/60 flex items-center justify-between">
+        <div className="min-w-0">
+          <h1 className={`font-extrabold text-lg tracking-tight text-[#28427a] ${isOpen ? '' : 'text-center'}`}>
+            {isOpen ? 'KASIRIN' : 'KS'}
+          </h1>
+        </div>
+        {isOpen && (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="w-8 h-8 rounded-full border border-blue-200/70 text-[#2a467b] text-xs font-semibold hover:bg-white/80 transition"
+            title="Collapse sidebar"
+          >
+            {'<'}
+          </button>
+        )}
       </div>
 
-      <nav className="space-y-2 p-4 flex-1">
+      <nav className="space-y-2 p-3 flex-1">
         {menuItems.map((item) => (
-          <Link
+          <NavLink
             key={item.path}
             to={item.path}
-            className={`flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} p-3 rounded-lg hover:bg-gray-700 transition`}
+            className={({ isActive }) =>
+              `nav-pill flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} p-3 rounded-xl text-sm font-medium ${
+                isActive ? 'nav-pill-active text-white shadow-md shadow-blue-400/20' : 'text-[#3a578f] hover:text-[#2c477d]'
+              }`
+            }
             title={item.label}
           >
-            <item.icon size={24} />
+            <item.icon size={20} />
             {isOpen && <span>{item.label}</span>}
-          </Link>
+          </NavLink>
         ))}
       </nav>
 
-      <div className="p-4">
+      <div className="p-3 border-t border-blue-200/60">
         <button
           onClick={handleLogout}
-          className={`flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} p-3 rounded-lg hover:bg-gray-700 transition w-full`}
+          className={`nav-pill flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} p-3 rounded-xl text-[#3a578f] hover:text-[#2c477d] transition w-full`}
           title="Logout"
         >
-          <FiLogOut size={24} />
+          <FiLogOut size={20} />
           {isOpen && <span>Logout</span>}
         </button>
       </div>

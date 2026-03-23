@@ -76,9 +76,9 @@ export default function AddProductModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Tambah Produk</h2>
+    <div className="modal-backdrop flex items-center justify-center z-50 p-4">
+      <div className="modal-card rounded-2xl p-6 w-full max-w-md shadow-lg">
+        <h2 className="text-xl font-bold mb-4 text-blue-950">Tambah Produk</h2>
         
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
@@ -178,14 +178,14 @@ export default function AddProductModal({ onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-100"
+              className="flex-1 btn-secondary"
               disabled={loading}
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex-1 btn-primary"
               disabled={loading}
             >
               {loading ? 'Menyimpan...' : 'Simpan'}

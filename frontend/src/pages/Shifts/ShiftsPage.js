@@ -38,7 +38,7 @@ export default function ShiftsPage() {
   const handleOpenShift = async (floatAmount) => {
     setLoading(true);
     try {
-      const res = await api.post('/shifts/open', { float_amount: parseFloat(floatAmount) });
+      await api.post('/shifts/open', { float_amount: parseFloat(floatAmount) });
       toast.success('Shift berhasil dibuka');
       setShowOpenForm(false);
       fetchCurrentShift();
@@ -58,7 +58,7 @@ export default function ShiftsPage() {
 
     setLoading(true);
     try {
-      const res = await api.put(`/shifts/${currentShift.id}/close`, {
+      await api.put(`/shifts/${currentShift.id}/close`, {
         actual_amount: parseFloat(closeData.actual_amount),
         discrepancy_notes: closeData.notes
       });
@@ -77,11 +77,11 @@ export default function ShiftsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Manajemen Shift</h1>
+        <h1 className="text-3xl font-bold page-title section-enter">Manajemen Shift</h1>
         {!currentShift && (
           <button
             onClick={() => setShowOpenForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="btn-primary"
           >
             Buka Shift
           </button>
@@ -90,7 +90,7 @@ export default function ShiftsPage() {
 
       {/* Current Shift Card */}
       {currentShift && (
-        <div className="card border-2 border-green-400 bg-green-50">
+        <div className="card border-2 border-emerald-300/70 bg-emerald-50/50 section-enter">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-2xl font-bold text-green-700 flex items-center gap-2">
@@ -112,7 +112,7 @@ export default function ShiftsPage() {
             </div>
             <button
               onClick={() => setShowCloseForm(true)}
-              className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold"
+              className="btn-danger px-6 py-3 font-semibold"
             >
               Tutup Shift
             </button>
@@ -122,17 +122,17 @@ export default function ShiftsPage() {
 
       {/* Open Shift Form */}
       {showOpenForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Buka Shift Baru</h3>
+        <div className="modal-backdrop flex items-center justify-center p-4 z-50">
+          <div className="modal-card rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4 text-blue-950">Buka Shift Baru</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Nominal Float (Rp)</label>
+                <label className="form-label mb-2">Nominal Float (Rp)</label>
                 <input
                   type="number"
                   id="floatAmount"
                   defaultValue="1000000"
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="form-input"
                   placeholder="Jumlah uang awal di kasir"
                 />
               </div>
@@ -143,13 +143,13 @@ export default function ShiftsPage() {
                     handleOpenShift(amount);
                   }}
                   disabled={loading}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="flex-1 btn-primary disabled:opacity-50"
                 >
                   {loading ? 'Memproses...' : 'Buka Shift'}
                 </button>
                 <button
                   onClick={() => setShowOpenForm(false)}
-                  className="flex-1 bg-gray-300 text-black py-2 rounded-lg hover:bg-gray-400"
+                  className="flex-1 btn-secondary"
                 >
                   Batal
                 </button>
@@ -161,32 +161,32 @@ export default function ShiftsPage() {
 
       {/* Close Shift Form */}
       {showCloseForm && currentShift && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Tutup Shift</h3>
+        <div className="modal-backdrop flex items-center justify-center p-4 z-50">
+          <div className="modal-card rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4 text-blue-950">Tutup Shift</h3>
             <div className="space-y-4">
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-sm text-gray-600">Ekspektasi</p>
+              <div className="bg-blue-50/70 p-3 rounded-lg border border-blue-200/70">
+                <p className="text-sm text-blue-700">Ekspektasi</p>
                 <p className="text-2xl font-bold">
                   Rp {parseInt(currentShift.expected_amount || 0).toLocaleString('id-ID')}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Jumlah Uang Aktual (Rp)</label>
+                <label className="form-label mb-2">Jumlah Uang Aktual (Rp)</label>
                 <input
                   type="number"
                   value={closeData.actual_amount}
                   onChange={(e) => setCloseData({ ...closeData, actual_amount: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="form-input"
                   placeholder="Masukkan jumlah uang"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Catatan (jika ada selisih)</label>
+                <label className="form-label mb-2">Catatan (jika ada selisih)</label>
                 <textarea
                   value={closeData.notes}
                   onChange={(e) => setCloseData({ ...closeData, notes: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="form-input"
                   rows="3"
                   placeholder="Alasan jika ada selisih kas"
                 />
@@ -195,13 +195,13 @@ export default function ShiftsPage() {
                 <button
                   onClick={handleCloseShift}
                   disabled={loading}
-                  className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="flex-1 btn-primary disabled:opacity-50"
                 >
                   {loading ? 'Memproses...' : 'Tutup Shift'}
                 </button>
                 <button
                   onClick={() => setShowCloseForm(false)}
-                  className="flex-1 bg-gray-300 text-black py-2 rounded-lg hover:bg-gray-400"
+                  className="flex-1 btn-secondary"
                 >
                   Batal
                 </button>
@@ -213,11 +213,11 @@ export default function ShiftsPage() {
 
       {/* Shift History */}
       <div className="card">
-        <h2 className="text-xl font-bold mb-4">Riwayat Shift</h2>
+        <h2 className="text-xl font-bold mb-4 text-blue-950">Riwayat Shift</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b">
+              <tr className="table-head">
                 <th className="pb-3">Tanggal Buka</th>
                 <th className="pb-3">Float</th>
                 <th className="pb-3">Penjualan</th>
@@ -228,7 +228,7 @@ export default function ShiftsPage() {
             </thead>
             <tbody>
               {shifts.map((shift) => (
-                <tr key={shift.id} className="border-b hover:bg-gray-50">
+                <tr key={shift.id} className="table-row">
                   <td className="py-3">
                     {new Date(shift.opened_at).toLocaleString('id-ID')}
                   </td>

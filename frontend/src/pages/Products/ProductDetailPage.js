@@ -1,5 +1,5 @@
 // frontend/src/pages/Products/ProductDetailPage.js
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiSave } from 'react-icons/fi';
 import api from '../../services/api';
@@ -22,13 +22,7 @@ export default function ProductDetailPage() {
     description: ''
   });
 
-  useEffect(() => {
-    fetchProduct();
-    fetchCategories();
-    fetchConditions();
-  }, [id]);
-
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const res = await api.get(`/products/${id}`);
       setFormData({
@@ -45,25 +39,31 @@ export default function ProductDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const res = await api.get('/products/categories/list');
       setCategories(res.data.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
-  };
+  }, []);
 
-  const fetchConditions = async () => {
+  const fetchConditions = useCallback(async () => {
     try {
       const res = await api.get('/products/conditions/list');
       setConditions(res.data.data);
     } catch (error) {
       console.error('Error fetching conditions:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProduct();
+    fetchCategories();
+    fetchConditions();
+  }, [fetchProduct, fetchCategories, fetchConditions]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -103,14 +103,14 @@ export default function ProductDetailPage() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate('/products')}
-          className="p-2 hover:bg-gray-100 rounded-lg transition"
+          className="p-2 hover:bg-blue-100 rounded-lg transition"
         >
           <FiArrowLeft size={24} />
         </button>
-        <h1 className="text-3xl font-bold">Edit Produk</h1>
+        <h1 className="text-3xl font-bold page-title section-enter">Edit Produk</h1>
       </div>
 
-      <div className="card max-w-2xl">
+      <div className="card max-w-2xl section-enter">
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* SKU */}
@@ -121,9 +121,9 @@ export default function ProductDetailPage() {
               name="sku"
               value={formData.sku}
               disabled
-              className="form-input bg-gray-100"
+              className="form-input bg-blue-50"
             />
-            <p className="text-xs text-gray-500 mt-1">SKU tidak dapat diubah</p>
+            <p className="muted-note mt-1">SKU tidak dapat diubah</p>
           </div>
 
           {/* Nama */}
@@ -147,14 +147,14 @@ export default function ProductDetailPage() {
                 name="category_id"
                 value={formData.category_id}
                 disabled
-                className="form-input bg-gray-100"
+                className="form-input bg-blue-50"
               >
                 <option value="">Pilih Kategori</option>
                 {categories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Kategori tidak dapat diubah</p>
+              <p className="muted-note mt-1">Kategori tidak dapat diubah</p>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Kondisi</label>
@@ -162,14 +162,14 @@ export default function ProductDetailPage() {
                 name="condition_id"
                 value={formData.condition_id}
                 disabled
-                className="form-input bg-gray-100"
+                className="form-input bg-blue-50"
               >
                 <option value="">Pilih Kondisi</option>
                 {conditions.map(cond => (
                   <option key={cond.id} value={cond.id}>{cond.name}</option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Kondisi tidak dapat diubah</p>
+              <p className="muted-note mt-1">Kondisi tidak dapat diubah</p>
             </div>
           </div>
 

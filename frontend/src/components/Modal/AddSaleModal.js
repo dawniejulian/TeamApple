@@ -132,9 +132,9 @@ export default function AddSaleModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Tambah Penjualan</h2>
+    <div className="modal-backdrop flex items-center justify-center z-50 p-4">
+      <div className="modal-card rounded-2xl p-6 w-full max-w-md shadow-lg">
+        <h2 className="text-xl font-bold mb-4 text-blue-950">Tambah Penjualan</h2>
         
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
@@ -156,7 +156,7 @@ export default function AddSaleModal({ onClose, onSuccess }) {
           </div>
 
           {selectedProduct && (
-            <div className="bg-blue-50 p-3 rounded text-sm">
+            <div className="bg-blue-50/80 p-3 rounded-lg border border-blue-200/70 text-sm text-blue-900">
               <p>Harga Jual: Rp {selectedProduct.selling_price?.toLocaleString('id-ID')}</p>
             </div>
           )}
@@ -206,14 +206,14 @@ export default function AddSaleModal({ onClose, onSuccess }) {
                 localStorage.removeItem(CUSTOMER_DISPLAY_KEY);
                 onClose();
               }}
-              className="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-100"
+              className="flex-1 btn-secondary"
               disabled={loading}
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex-1 btn-primary"
               disabled={loading}
             >
               {loading ? 'Menyimpan...' : 'Simpan'}

@@ -35,10 +35,14 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="glass-panel login-card p-8 sm:p-9">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">💎 KASIRIN</h1>
-          <p className="text-gray-500 mt-2">Sistem Manajemen Stok & Penjualan</p>
+          <span className="hourglass-chip mb-3">
+            <span className="hourglass-core" />
+            Hourglass Flow
+          </span>
+          <h1 className="text-3xl font-extrabold brand-gradient-text">KASIRIN</h1>
+          <p className="text-blue-800/70 mt-2 text-sm sm:text-base">Sistem Manajemen Stok & Penjualan</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -69,7 +73,7 @@ export default function LoginPage() {
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                className="absolute inset-y-0 right-3 flex items-center text-blue-700/70 hover:text-blue-900"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? '🙈' : '👁'}
@@ -86,8 +90,8 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm text-gray-600 space-y-1">
-          <p className="font-semibold text-blue-700">Akun Tersedia:</p>
+        <div className="mt-6 p-4 rounded-xl border border-blue-200/70 bg-white/70 text-sm text-blue-900/80 space-y-1">
+          <p className="font-semibold text-blue-800">Akun Tersedia:</p>
           <p>👤 <strong>admin</strong> / admin123 (Administrator)</p>
           <p>👤 <strong>manager</strong> / manager123 (Manager)</p>
           <p>👤 <strong>staff1</strong> / staff123 (Staff)</p>

@@ -187,7 +187,7 @@ export default function SettingsPage() {
             </select>
           </SettingsInput>
 
-          <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
             <input
               type="checkbox"
               checked={settings.taxAndPricing.taxIncludedInPrice}
@@ -203,7 +203,7 @@ export default function SettingsPage() {
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+            <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
               <input
                 type="checkbox"
                 checked={settings.payment.enabledMethods.cash}
@@ -214,7 +214,7 @@ export default function SettingsPage() {
               Cash
             </label>
 
-            <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+            <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
               <input
                 type="checkbox"
                 checked={settings.payment.enabledMethods.transfer}
@@ -225,7 +225,7 @@ export default function SettingsPage() {
               Transfer
             </label>
 
-            <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+            <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
               <input
                 type="checkbox"
                 checked={settings.payment.enabledMethods.qris}
@@ -262,7 +262,7 @@ export default function SettingsPage() {
               </select>
             </SettingsInput>
 
-            <label className="flex items-center gap-3 text-sm font-medium text-gray-700 mt-7">
+            <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85 mt-7">
               <input
                 type="checkbox"
                 checked={settings.payment.allowChange}
@@ -288,7 +288,7 @@ export default function SettingsPage() {
             />
           </SettingsInput>
 
-          <label className="flex items-center gap-3 text-sm font-medium text-gray-700 mt-7">
+          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85 mt-7">
             <input
               type="checkbox"
               checked={settings.stockAndAlerts.enableLowStockAlert}
@@ -297,7 +297,7 @@ export default function SettingsPage() {
             Aktifkan notifikasi stok menipis
           </label>
 
-          <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
             <input
               type="checkbox"
               checked={settings.stockAndAlerts.blockSaleWhenOutOfStock}
@@ -324,7 +324,7 @@ export default function SettingsPage() {
             </select>
           </SettingsInput>
 
-          <label className="flex items-center gap-3 text-sm font-medium text-gray-700 mt-7">
+          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85 mt-7">
             <input
               type="checkbox"
               checked={settings.receiptAndPrinter.autoPrint}
@@ -333,7 +333,7 @@ export default function SettingsPage() {
             Cetak otomatis setelah pembayaran berhasil
           </label>
 
-          <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
             <input
               type="checkbox"
               checked={settings.receiptAndPrinter.showCashierName}
@@ -347,7 +347,7 @@ export default function SettingsPage() {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+        <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
           <input
             type="checkbox"
             checked={settings.accessControl.staffCanEditPrice}
@@ -356,7 +356,7 @@ export default function SettingsPage() {
           Staff boleh ubah harga jual
         </label>
 
-        <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+        <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
           <input
             type="checkbox"
             checked={settings.accessControl.staffCanGiveDiscount}
@@ -365,7 +365,7 @@ export default function SettingsPage() {
           Staff boleh memberi diskon
         </label>
 
-        <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+        <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
           <input
             type="checkbox"
             checked={settings.accessControl.managerMustApprovePO}
@@ -381,8 +381,8 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Pengaturan</h1>
-          <p className="text-sm text-gray-500 mt-1">Kelola konfigurasi operasional toko dan kasir</p>
+          <h1 className="text-3xl font-bold page-title section-enter">Pengaturan</h1>
+          <p className="text-sm text-blue-700/75 mt-1">Kelola konfigurasi operasional toko dan kasir</p>
         </div>
         <div className="flex gap-2">
           <button className="btn-secondary" onClick={resetSettings}>Reset Default</button>
@@ -391,15 +391,15 @@ export default function SettingsPage() {
       </div>
 
       <div className="card">
-        <div className="flex flex-wrap gap-2 border-b border-gray-100 pb-4">
+        <div className="flex flex-wrap gap-2 border-b border-blue-100 pb-4">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+              className={`tab-pill ${
                 activeTab === tab.key
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'tab-pill-active'
+                  : ''
               }`}
             >
               {tab.label}
@@ -408,7 +408,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="pt-6 space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">{activeTabLabel}</h2>
+          <h2 className="text-xl font-semibold text-blue-950">{activeTabLabel}</h2>
           {renderTabContent()}
         </div>
       </div>

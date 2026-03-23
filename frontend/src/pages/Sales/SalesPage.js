@@ -95,7 +95,7 @@ export default function SalesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Penjualan</h1>
+        <h1 className="text-3xl font-bold page-title section-enter">Penjualan</h1>
         <div className="flex items-center gap-3">
           <button
             onClick={() => window.open('/customer-display', '_blank', 'noopener,noreferrer')}
@@ -117,14 +117,14 @@ export default function SalesPage() {
         <button
           onClick={handleExportPDF}
           disabled={sales.length === 0 || exporting}
-          className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2"
+          className="btn-export-red flex items-center gap-2"
         >
           {exporting ? '⏳ Sedang...' : '📄 Download PDF'}
         </button>
         <button
           onClick={handleExportExcel}
           disabled={sales.length === 0 || exporting}
-          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2"
+          className="btn-export-green flex items-center gap-2"
         >
           {exporting ? '⏳ Sedang...' : '📊 Download Excel'}
         </button>
@@ -138,7 +138,7 @@ export default function SalesPage() {
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b">
+              <tr className="table-head">
                 <th className="pb-3">No. Invoice</th>
                 <th className="pb-3">Tanggal</th>
                 <th className="pb-3">Channel</th>
@@ -149,7 +149,7 @@ export default function SalesPage() {
             </thead>
             <tbody>
               {sales.map((sale) => (
-                <tr key={sale.id} className="border-b hover:bg-gray-50">
+                <tr key={sale.id} className="table-row">
                   <td className="py-3 font-mono">{sale.invoice_number}</td>
                   <td className="py-3">
                     {format(new Date(sale.created_at), 'dd MMM yyyy HH:mm', {
@@ -165,8 +165,8 @@ export default function SalesPage() {
                     <span
                       className={`px-2 py-1 rounded text-xs font-semibold ${
                         sale.transaction_status === 'COMPLETED'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-amber-100 text-amber-700'
                       }`}
                     >
                       {sale.transaction_status}

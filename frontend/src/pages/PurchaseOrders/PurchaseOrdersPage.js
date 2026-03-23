@@ -1,7 +1,7 @@
 // frontend/src/pages/PurchaseOrders/PurchaseOrdersPage.js
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FiPlus, FiEdit2, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { FiPlus, FiEdit2 } from 'react-icons/fi';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 
@@ -59,7 +59,7 @@ export default function PurchaseOrdersPage() {
         }))
       };
 
-      const res = await api.post('/purchase-orders', payload);
+      await api.post('/purchase-orders', payload);
       toast.success('PO berhasil dibuat');
       setShowForm(false);
       setFormData({ supplier_name: '', supplier_email: '', items: [{ product_id: '', quantity: '', price: '' }] });
@@ -85,11 +85,11 @@ export default function PurchaseOrdersPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Purchase Order</h1>
+        <h1 className="text-3xl font-bold page-title section-enter">Purchase Order</h1>
         {canManagePO && (
           <button
             onClick={() => setShowForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+            className="btn-primary flex items-center gap-2"
           >
             <FiPlus size={20} /> Buat PO
           </button>
@@ -98,29 +98,29 @@ export default function PurchaseOrdersPage() {
 
       {/* Create PO Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full my-8">
-            <h3 className="text-xl font-bold mb-4">Buat Purchase Order Baru</h3>
+        <div className="modal-backdrop flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="modal-card rounded-2xl p-6 max-w-2xl w-full my-8">
+            <h3 className="text-xl font-bold mb-4 text-blue-950">Buat Purchase Order Baru</h3>
 
             <div className="space-y-4 mb-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Nama Supplier</label>
+                  <label className="form-label mb-2">Nama Supplier</label>
                   <input
                     type="text"
                     value={formData.supplier_name}
                     onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="form-input"
                     placeholder="PT. Supplier ABC"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email Supplier</label>
+                  <label className="form-label mb-2">Email Supplier</label>
                   <input
                     type="email"
                     value={formData.supplier_email}
                     onChange={(e) => setFormData({ ...formData, supplier_email: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="form-input"
                     placeholder="supplier@example.com"
                   />
                 </div>
@@ -128,7 +128,7 @@ export default function PurchaseOrdersPage() {
 
               {/* Items */}
               <div>
-                <h4 className="font-semibold mb-3">Item-item PO</h4>
+                <h4 className="font-semibold mb-3 text-blue-900">Item-item PO</h4>
                 {formData.items.map((item, idx) => (
                   <div key={idx} className="grid grid-cols-4 gap-3 mb-3">
                     <select
@@ -138,7 +138,7 @@ export default function PurchaseOrdersPage() {
                         newItems[idx].product_id = e.target.value;
                         setFormData({ ...formData, items: newItems });
                       }}
-                      className="border rounded-lg px-3 py-2"
+                      className="form-input"
                     >
                       <option value="">Pilih Produk</option>
                       {products.map((p) => (
@@ -154,7 +154,7 @@ export default function PurchaseOrdersPage() {
                         setFormData({ ...formData, items: newItems });
                       }}
                       placeholder="Qty"
-                      className="border rounded-lg px-3 py-2"
+                      className="form-input"
                     />
                     <input
                       type="number"
@@ -165,7 +165,7 @@ export default function PurchaseOrdersPage() {
                         setFormData({ ...formData, items: newItems });
                       }}
                       placeholder="Harga Satuan"
-                      className="border rounded-lg px-3 py-2"
+                      className="form-input"
                     />
                     {formData.items.length > 1 && (
                       <button
@@ -174,7 +174,7 @@ export default function PurchaseOrdersPage() {
                           const newItems = formData.items.filter((_, i) => i !== idx);
                           setFormData({ ...formData, items: newItems });
                         }}
-                        className="bg-red-500 text-white rounded-lg hover:bg-red-600"
+                        className="btn-danger"
                       >
                         Hapus
                       </button>
@@ -189,7 +189,7 @@ export default function PurchaseOrdersPage() {
                       items: [...formData.items, { product_id: '', quantity: '', price: '' }]
                     });
                   }}
-                  className="text-blue-600 text-sm font-semibold hover:text-blue-700"
+                  className="text-blue-700 text-sm font-semibold hover:text-blue-900"
                 >
                   + Tambah Item
                 </button>
@@ -200,13 +200,13 @@ export default function PurchaseOrdersPage() {
               <button
                 onClick={handleCreatePO}
                 disabled={loading}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 btn-primary disabled:opacity-50"
               >
                 {loading ? 'Memproses...' : 'Buat PO'}
               </button>
               <button
                 onClick={() => setShowForm(false)}
-                className="flex-1 bg-gray-300 text-black py-2 rounded-lg hover:bg-gray-400"
+                className="flex-1 btn-secondary"
               >
                 Batal
               </button>
@@ -217,10 +217,10 @@ export default function PurchaseOrdersPage() {
 
       {/* Orders List */}
       <div className="card overflow-x-auto">
-        <h2 className="text-xl font-bold mb-4">Daftar Purchase Order</h2>
+        <h2 className="text-xl font-bold mb-4 text-blue-950">Daftar Purchase Order</h2>
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b">
+            <tr className="table-head">
               <th className="pb-3">No. PO</th>
               <th className="pb-3">Supplier</th>
               <th className="pb-3">Total</th>
@@ -231,7 +231,7 @@ export default function PurchaseOrdersPage() {
           </thead>
           <tbody>
             {orders.map((order) => (
-              <tr key={order.id} className="border-b hover:bg-gray-50">
+              <tr key={order.id} className="table-row">
                 <td className="py-3 font-semibold">PO-{String(order.id).padStart(5, '0')}</td>
                 <td className="py-3">{order.supplier_name}</td>
                 <td className="py-3 font-semibold">

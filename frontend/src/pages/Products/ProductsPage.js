@@ -120,7 +120,7 @@ export default function ProductsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Produk</h1>
+        <h1 className="text-3xl font-bold page-title section-enter">Produk</h1>
         <button
           onClick={() => setShowModal(true)}
           className="btn-primary flex items-center space-x-2"
@@ -130,9 +130,9 @@ export default function ProductsPage() {
       </div>
 
       {/* Search */}
-      <div className="card">
+      <div className="card section-enter">
         <div className="flex items-center space-x-2">
-          <FiSearch className="text-gray-400" />
+          <FiSearch className="text-blue-500" />
           <input
             type="text"
             placeholder="Cari produk..."
@@ -148,14 +148,14 @@ export default function ProductsPage() {
         <button
           onClick={handleExportPDF}
           disabled={products.length === 0 || exporting}
-          className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2"
+          className="btn-export-red flex items-center gap-2"
         >
           {exporting ? '⏳ Sedang...' : '📄 Download PDF'}
         </button>
         <button
           onClick={handleExportExcel}
           disabled={products.length === 0 || exporting}
-          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2"
+          className="btn-export-green flex items-center gap-2"
         >
           {exporting ? '⏳ Sedang...' : '📊 Download Excel'}
         </button>
@@ -170,7 +170,7 @@ export default function ProductsPage() {
         ) : (
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b">
+              <tr className="table-head">
                 <th className="pb-3">SKU</th>
                 <th className="pb-3">Nama</th>
                 <th className="pb-3">Kategori</th>
@@ -182,7 +182,7 @@ export default function ProductsPage() {
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="border-b hover:bg-gray-50">
+                <tr key={product.id} className="table-row">
                   <td className="py-3">{product.sku}</td>
                   <td className="py-3">{product.name}</td>
                   <td className="py-3">{product.category_name || '-'}</td>
@@ -195,7 +195,7 @@ export default function ProductsPage() {
                     <div className="flex justify-center gap-2">
                       <button
                         onClick={() => navigate(`/products/${product.id}`)}
-                        className="p-2 hover:bg-blue-100 rounded-lg text-blue-600 transition"
+                        className="p-2 hover:bg-blue-100/80 rounded-lg text-blue-700 transition"
                         title="Edit"
                       >
                         <FiEdit2 size={18} />

@@ -1,5 +1,5 @@
 // frontend/src/components/Layout/Header.js
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FiMenu, FiBell, FiLogOut } from 'react-icons/fi';
@@ -38,7 +38,7 @@ export default function Header({ onMenuClick }) {
     return items;
   }, [notificationData]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const response = await api.get('/reports/dashboard/overview');
       const alerts = response?.data?.data?.alerts || {};
@@ -57,7 +57,7 @@ export default function Header({ onMenuClick }) {
     } catch (_) {
       // Keep header stable if notifications endpoint is temporarily unavailable.
     }
-  };
+  }, [isNotificationOpen]);
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
@@ -81,7 +81,7 @@ export default function Header({ onMenuClick }) {
     const timer = setInterval(fetchNotifications, 30000);
 
     return () => clearInterval(timer);
-  }, [isNotificationOpen]);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -105,33 +105,34 @@ export default function Header({ onMenuClick }) {
   const roleLabel = user?.role || '';
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className="flex items-center justify-between px-6 py-4">
+    <header className="px-3 pt-3 sm:px-5 sm:pt-5 relative z-20">
+      <div className="glass-panel rounded-2xl flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
         <button
           onClick={onMenuClick}
-          className="text-gray-600 hover:text-gray-900"
+          className="w-10 h-10 rounded-xl bg-white/70 border border-blue-200/60 text-blue-900 hover:bg-white transition"
+          title="Toggle sidebar"
         >
-          <FiMenu size={24} />
+          <FiMenu size={22} className="mx-auto" />
         </button>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="relative" ref={notificationRef}>
             <button
               onClick={handleToggleNotification}
-              className="text-gray-600 hover:text-gray-900 relative"
+              className="w-10 h-10 rounded-xl bg-white/70 border border-blue-200/60 text-blue-900 hover:bg-white transition relative"
               title="Notifikasi"
             >
-              <FiBell size={24} />
+              <FiBell size={20} className="mx-auto" />
               {hasUnreadNotification && (
-                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full status-dot"></span>
               )}
             </button>
 
             {isNotificationOpen && (
-              <div className="absolute right-0 mt-3 w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50">
-                <div className="px-4 py-3 border-b border-gray-100">
-                  <p className="text-sm font-semibold text-gray-800">Notifikasi</p>
-                  <p className="text-xs text-gray-500">
+              <div className="absolute right-0 mt-3 w-80 rounded-2xl border border-blue-200/60 bg-white/95 shadow-2xl backdrop-blur-md z-50 overflow-hidden">
+                <div className="px-4 py-3 border-b border-blue-100 bg-gradient-to-r from-white to-blue-50/70">
+                  <p className="text-sm font-semibold text-blue-950">Notifikasi</p>
+                  <p className="text-xs text-blue-700/70">
                     {notificationData.fetchedAt
                       ? `Update ${notificationData.fetchedAt.toLocaleTimeString('id-ID')}`
                       : 'Belum ada data'}
@@ -140,17 +141,17 @@ export default function Header({ onMenuClick }) {
 
                 <div className="max-h-80 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <div className="px-4 py-6 text-sm text-gray-500 text-center">
+                    <div className="px-4 py-6 text-sm text-blue-700/70 text-center">
                       Tidak ada notifikasi baru
                     </div>
                   ) : (
                     notifications.map((item) => (
                       <div
                         key={item.id}
-                        className="px-4 py-3 border-b border-gray-100 last:border-b-0"
+                        className="px-4 py-3 border-b border-blue-100/70 last:border-b-0 hover:bg-blue-50/70 transition"
                       >
-                        <p className="text-sm font-semibold text-gray-800">{item.title}</p>
-                        <p className="text-sm text-gray-600 mt-1">{item.message}</p>
+                        <p className="text-sm font-semibold text-blue-950">{item.title}</p>
+                        <p className="text-sm text-blue-900/80 mt-1">{item.message}</p>
                       </div>
                     ))
                   )}
@@ -159,20 +160,20 @@ export default function Header({ onMenuClick }) {
             )}
           </div>
 
-          <div className="flex items-center space-x-3 border-l pl-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+          <div className="flex items-center space-x-3 border-l border-blue-200/70 pl-3 sm:pl-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-full flex items-center justify-center text-white font-semibold shadow-lg shadow-blue-800/20">
               {displayName.charAt(0).toUpperCase()}
             </div>
             <div className="hidden sm:block">
-              <p className="text-sm font-semibold text-gray-800">{displayName}</p>
-              <p className="text-xs text-gray-500">{roleLabel}</p>
+              <p className="text-sm font-semibold text-blue-950">{displayName}</p>
+              <p className="text-xs text-blue-700/75 tracking-wide">{roleLabel}</p>
             </div>
             <button
               onClick={handleLogout}
-              className="ml-2 text-gray-500 hover:text-red-600 transition-colors"
+              className="ml-2 w-9 h-9 rounded-lg border border-blue-200/70 text-blue-800 hover:text-red-600 hover:bg-red-50 transition-colors"
               title="Logout"
             >
-              <FiLogOut size={20} />
+              <FiLogOut size={18} className="mx-auto" />
             </button>
           </div>
         </div>
