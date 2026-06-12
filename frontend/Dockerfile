@@ -15,6 +15,7 @@ COPY . .
 
 # Set ENV dari ARG untuk build process
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV GENERATE_SOURCEMAP=false
 
 RUN npm run build
 
