@@ -32,13 +32,19 @@ export default function SalesFormPage() {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scannerReady, setScannerReady] = useState(false);
   const [scannerError, setScannerError] = useState('');
+  const [torchOn, setTorchOn] = useState(false);
+  const [hasTorch, setHasTorch] = useState(false);
   const scannerRef = useRef(null);
+  const wakeLockRef = useRef(null);
   const scannerContainerId = 'sales-barcode-scanner';
 
   useEffect(() => {
     loadProducts();
 
     return () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch(() => {});
+      }
       if (scannerRef.current) {
         scannerRef.current.stop().catch((err) => console.error('Error stopping scanner on unmount:', err));
       }
@@ -91,6 +97,13 @@ export default function SalesFormPage() {
   };
 
   const stopScanner = (keepReady = false) => {
+    // Release Wake Lock
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release()
+        .then(() => { wakeLockRef.current = null; })
+        .catch((err) => console.error('Error releasing wake lock:', err));
+    }
+
     if (scannerRef.current) {
       scannerRef.current
         .stop()
@@ -108,16 +121,30 @@ export default function SalesFormPage() {
         setScannerReady(false);
       }
     }
+    setTorchOn(false);
+    setHasTorch(false);
   };
 
   const startScanner = async () => {
     setScannerError('');
     setScannerOpen(true);
     setScannerReady(false);
+    setTorchOn(false);
+    setHasTorch(false);
 
     if (!navigator.mediaDevices?.getUserMedia) {
       setScannerError('Browser tidak mendukung akses kamera. Gunakan input barcode manual.');
       return;
+    }
+
+    // Request Wake Lock to keep screen awake/bright
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        console.log('Screen Wake Lock acquired');
+      }
+    } catch (err) {
+      console.warn('Screen Wake Lock request failed:', err);
     }
 
     setTimeout(async () => {
@@ -125,31 +152,20 @@ export default function SalesFormPage() {
         const scanner = new Html5Qrcode(scannerContainerId);
         scannerRef.current = scanner;
 
-        let cameras;
-        try {
-          cameras = await Html5Qrcode.getCameras();
-        } catch (cameraError) {
-          setScannerError('Tidak bisa mengakses daftar kamera. Pastikan browser memiliki izin akses kamera.');
-          stopScanner(true);
-          return;
-        }
-
-        if (!cameras || cameras.length === 0) {
-          setScannerError('Tidak ada kamera yang ditemukan di perangkat ini.');
-          stopScanner(true);
-          return;
-        }
-
-        const preferredCamera = cameras.find((camera) => /back|rear|environment/i.test(camera.label)) || cameras[0];
-        const cameraConfig = { deviceId: { exact: preferredCamera.id } };
-
         try {
           await scanner.start(
-            cameraConfig,
+            { facingMode: "environment" }, // Request back/rear camera directly
             {
-              fps: 10,
-              qrbox: { width: 300, height: 180 },
-              aspectRatio: 1.333333,
+              fps: 20, // Speed up scanning
+              qrbox: (width, height) => ({
+                width: Math.min(width * 0.85, 340),
+                height: Math.min(height * 0.35, 120) // Wide and thin for 1D barcodes
+              }),
+              videoConstraints: {
+                facingMode: "environment",
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 }
+              },
               disableFlip: true,
               formatsToSupport: [
                 Html5QrcodeSupportedFormats.EAN_13,
@@ -167,6 +183,15 @@ export default function SalesFormPage() {
             () => {}
           );
 
+          // Detect if torch is supported
+          try {
+            const capabilities = scanner.getRunningTrackCapabilities();
+            setHasTorch(!!capabilities.torch);
+          } catch (capabilitiesError) {
+            console.warn('Failed to detect torch capabilities:', capabilitiesError);
+            setHasTorch(false);
+          }
+
           setScannerReady(true);
         } catch (startError) {
           setScannerError(`Gagal memulai scanner: ${startError.message || 'Kesalahan tidak diketahui'}`);
@@ -182,6 +207,21 @@ export default function SalesFormPage() {
         stopScanner(true);
       }
     }, 300);
+  };
+
+  const toggleTorch = async () => {
+    const scanner = scannerRef.current;
+    if (!scanner) return;
+    try {
+      const nextTorchState = !torchOn;
+      await scanner.applyVideoConstraints({
+        advanced: [{ torch: nextTorchState }]
+      });
+      setTorchOn(nextTorchState);
+    } catch (err) {
+      console.error('Failed to toggle torch:', err);
+      toast.error('Gagal menyalakan senter');
+    }
   };
 
   const quantityValue = Number(formData.quantity || 0);
@@ -520,14 +560,30 @@ export default function SalesFormPage() {
         <div className="card section-enter">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-blue-950">Scan Barcode Produk</h2>
-            <button
-              type="button"
-              onClick={() => stopScanner()}
-              className="p-2 hover:bg-blue-100 rounded-lg text-blue-700 transition"
-              title="Tutup scanner"
-            >
-              <FiX size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+              {scannerReady && hasTorch && (
+                <button
+                  type="button"
+                  onClick={toggleTorch}
+                  className={`p-2 rounded-lg transition border flex items-center gap-1 text-xs font-bold ${
+                    torchOn
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600'
+                      : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200'
+                  }`}
+                  title={torchOn ? 'Matikan Senter' : 'Nyalakan Senter'}
+                >
+                  <span>⚡ {torchOn ? 'Senter Aktif' : 'Nyalakan Senter'}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => stopScanner()}
+                className="p-2 hover:bg-blue-100 rounded-lg text-blue-700 transition"
+                title="Tutup scanner"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
           </div>
 
           {scannerError ? (

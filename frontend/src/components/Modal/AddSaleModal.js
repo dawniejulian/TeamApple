@@ -32,12 +32,18 @@ export default function AddSaleModal({ onClose, onSuccess }) {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scannerReady, setScannerReady] = useState(false);
   const [scannerError, setScannerError] = useState('');
+  const [torchOn, setTorchOn] = useState(false);
+  const [hasTorch, setHasTorch] = useState(false);
   const scannerRef = useRef(null);
+  const wakeLockRef = useRef(null);
   const scannerContainerId = 'modal-barcode-scanner';
 
   useEffect(() => {
     loadProducts();
     return () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch(() => {});
+      }
       if (scannerRef.current) {
         scannerRef.current.stop().catch((err) => console.error('Error stopping scanner on unmount:', err));
       }
@@ -90,6 +96,13 @@ export default function AddSaleModal({ onClose, onSuccess }) {
   };
 
   const stopScanner = (keepReady = false) => {
+    // Release Wake Lock
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release()
+        .then(() => { wakeLockRef.current = null; })
+        .catch((err) => console.error('Error releasing wake lock:', err));
+    }
+
     if (scannerRef.current) {
       scannerRef.current
         .stop()
@@ -107,16 +120,30 @@ export default function AddSaleModal({ onClose, onSuccess }) {
         setScannerReady(false);
       }
     }
+    setTorchOn(false);
+    setHasTorch(false);
   };
 
   const startScanner = async () => {
     setScannerError('');
     setScannerOpen(true);
     setScannerReady(false);
+    setTorchOn(false);
+    setHasTorch(false);
 
     if (!navigator.mediaDevices?.getUserMedia) {
       setScannerError('Browser tidak mendukung akses kamera. Gunakan input barcode manual.');
       return;
+    }
+
+    // Request Wake Lock to keep screen awake/bright
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        console.log('Screen Wake Lock acquired');
+      }
+    } catch (err) {
+      console.warn('Screen Wake Lock request failed:', err);
     }
 
     setTimeout(async () => {
@@ -124,31 +151,20 @@ export default function AddSaleModal({ onClose, onSuccess }) {
         const scanner = new Html5Qrcode(scannerContainerId);
         scannerRef.current = scanner;
 
-        let cameras;
-        try {
-          cameras = await Html5Qrcode.getCameras();
-        } catch (cameraError) {
-          setScannerError('Tidak bisa mengakses daftar kamera. Pastikan browser memiliki izin akses kamera.');
-          stopScanner(true);
-          return;
-        }
-
-        if (!cameras || cameras.length === 0) {
-          setScannerError('Tidak ada kamera yang ditemukan di perangkat ini.');
-          stopScanner(true);
-          return;
-        }
-
-        const preferredCamera = cameras.find((camera) => /back|rear|environment/i.test(camera.label)) || cameras[0];
-        const cameraConfig = { deviceId: { exact: preferredCamera.id } };
-
         try {
           await scanner.start(
-            cameraConfig,
+            { facingMode: "environment" }, // Request back/rear camera directly
             {
-              fps: 10,
-              qrbox: { width: 260, height: 160 },
-              aspectRatio: 1.333333,
+              fps: 20, // Speed up scanning
+              qrbox: (width, height) => ({
+                width: Math.min(width * 0.85, 300),
+                height: Math.min(height * 0.35, 110) // Wide and thin for 1D barcodes
+              }),
+              videoConstraints: {
+                facingMode: "environment",
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 }
+              },
               disableFlip: true,
               formatsToSupport: [
                 Html5QrcodeSupportedFormats.EAN_13,
@@ -166,6 +182,15 @@ export default function AddSaleModal({ onClose, onSuccess }) {
             () => {}
           );
 
+          // Detect if torch is supported
+          try {
+            const capabilities = scanner.getRunningTrackCapabilities();
+            setHasTorch(!!capabilities.torch);
+          } catch (capabilitiesError) {
+            console.warn('Failed to detect torch capabilities:', capabilitiesError);
+            setHasTorch(false);
+          }
+
           setScannerReady(true);
         } catch (startError) {
           setScannerError(`Gagal memulai scanner: ${startError.message || 'Kesalahan tidak diketahui'}`);
@@ -181,6 +206,21 @@ export default function AddSaleModal({ onClose, onSuccess }) {
         stopScanner(true);
       }
     }, 300);
+  };
+
+  const toggleTorch = async () => {
+    const scanner = scannerRef.current;
+    if (!scanner) return;
+    try {
+      const nextTorchState = !torchOn;
+      await scanner.applyVideoConstraints({
+        advanced: [{ torch: nextTorchState }]
+      });
+      setTorchOn(nextTorchState);
+    } catch (err) {
+      console.error('Failed to toggle torch:', err);
+      toast.error('Gagal menyalakan senter');
+    }
   };
 
   const loadProducts = async () => {
@@ -393,13 +433,29 @@ export default function AddSaleModal({ onClose, onSuccess }) {
               <div className="rounded-2xl border border-blue-100 bg-slate-100 p-3 space-y-2 section-enter shadow-inner">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-blue-950">Arahkan Barcode ke Kamera</p>
-                  <button
-                    type="button"
-                    onClick={() => stopScanner()}
-                    className="p-1 hover:bg-blue-200 rounded text-blue-700 transition"
-                  >
-                    <FiX size={14} />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    {scannerReady && hasTorch && (
+                      <button
+                        type="button"
+                        onClick={toggleTorch}
+                        className={`p-1 rounded transition border text-[9px] font-bold ${
+                          torchOn
+                            ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600'
+                            : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200'
+                        }`}
+                        title={torchOn ? 'Matikan Senter' : 'Nyalakan Senter'}
+                      >
+                        <span>⚡ {torchOn ? 'Matikan' : 'Senter'}</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => stopScanner()}
+                      className="p-1 hover:bg-blue-200 rounded text-blue-700 transition"
+                    >
+                      <FiX size={14} />
+                    </button>
+                  </div>
                 </div>
                 {scannerError ? (
                   <div className="rounded-lg border border-red-200 bg-red-50 text-red-700 p-2 text-xs">
