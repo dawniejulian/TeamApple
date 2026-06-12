@@ -55,3 +55,6 @@ Thumbs.db
 .cache
 .temp
 *.bak
+
+# Runtime uploads
+backend/uploads/

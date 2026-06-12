@@ -1,0 +1,204 @@
+@startuml Kasirin_UseCaseDiagram
+!theme plain
+
+skinparam backgroundColor #FFFFFF
+skinparam actorStyle awesome
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+skinparam usecase {
+  BackgroundColor #EAF2FF
+  BorderColor #2471A3
+  FontColor #1A252F
+  FontSize 11
+}
+
+skinparam actor {
+  FontSize 12
+  FontStyle bold
+  FontColor #1A252F
+}
+
+skinparam package {
+  BackgroundColor #FAFAFA
+  BorderColor #AAAAAA
+  FontSize 12
+  FontStyle bold
+}
+
+skinparam ArrowColor #444444
+skinparam ArrowFontSize 9
+
+title
+  <b>Use Case Diagram</b>
+  Sistem Kasirin - Manajemen Stok dan Penjualan
+end title
+
+' ─────────────────────────────────────────────────────
+'  ACTORS
+' ─────────────────────────────────────────────────────
+actor "Admin"     as Admin     #D5E8D4
+actor "Staff"     as Staff     #DAE8FC
+actor "Pelanggan" as Pelanggan #FFE6CC
+
+' ─────────────────────────────────────────────────────
+'  USE CASE - ADMIN
+' ─────────────────────────────────────────────────────
+package "Autentikasi (Admin)" {
+  usecase "Login"         as A1
+  usecase "Logout"        as A2
+  usecase "Ubah Password" as A3
+}
+
+package "Manajemen Produk" {
+  usecase "Tambah Produk"        as A4
+  usecase "Edit Produk"          as A5
+  usecase "Hapus Produk"         as A6
+  usecase "Tambah Varian Produk" as A7
+  usecase "Edit Varian Produk"   as A8
+}
+
+package "Manajemen Stok (Admin)" {
+  usecase "Input Stok Masuk"   as A9
+  usecase "Lihat Laporan Stok" as A10
+}
+
+package "Laporan & Analitik" {
+  usecase "Lihat Dashboard"         as A11
+  usecase "Laporan Penjualan Harian"  as A12
+  usecase "Laporan Penjualan Bulanan" as A13
+  usecase "Lihat Produk Terlaris"   as A14
+  usecase "Lihat Omset per Saluran" as A15
+  usecase "Export Laporan PDF"      as A16
+}
+
+package "Manajemen Pengguna & Sistem" {
+  usecase "Tambah Akun Pengguna" as A17
+  usecase "Edit Akun Pengguna"   as A18
+  usecase "Hapus Akun Pengguna"  as A19
+  usecase "Atur Role & Hak Akses" as A20
+  usecase "Pengaturan Toko"      as A21
+  usecase "Lihat Log Aktivitas"  as A22
+  usecase "Backup Data"          as A23
+}
+
+' ─────────────────────────────────────────────────────
+'  USE CASE - STAFF
+' ─────────────────────────────────────────────────────
+package "Autentikasi (Staff)" {
+  usecase "Login "         as S1
+  usecase "Logout "        as S2
+  usecase "Ubah Password " as S3
+}
+
+package "Operasional Produk & Stok" {
+  usecase "Lihat Katalog Produk"    as S4
+  usecase "Cari Produk"             as S5
+  usecase "Lihat Detail Produk"     as S6
+  usecase "Lihat Stok Real-time"    as S7
+  usecase "Catat Stok Keluar"       as S8
+  usecase "Terima Notif Stok Min"   as S9
+}
+
+package "Transaksi Penjualan" {
+  usecase "Buat Transaksi Baru"     as S10
+  usecase "Pilih Produk & Jumlah"   as S11
+  usecase "Pilih Metode Pembayaran" as S12
+  usecase "Pilih Saluran Penjualan" as S13
+  usecase "Terapkan Diskon"         as S14
+  usecase "Proses Buyback/Trade-in" as S15
+  usecase "Lihat Riwayat Transaksi" as S16
+  usecase "Lihat Detail Transaksi"  as S17
+}
+
+' ─────────────────────────────────────────────────────
+'  USE CASE - PELANGGAN
+' ─────────────────────────────────────────────────────
+package "Website Publik" {
+  usecase "Lihat Katalog Produk Toko" as P1
+  usecase "Cari Produk di Toko"       as P2
+  usecase "Lihat Detail & Harga"      as P3
+  usecase "Lihat Promo & Diskon"      as P4
+  usecase "Hubungi Toko via WhatsApp" as P5
+  usecase "Ajukan Buyback/Trade-in"   as P6
+}
+
+' ─────────────────────────────────────────────────────
+'  RELASI ADMIN
+' ─────────────────────────────────────────────────────
+Admin --> A1
+Admin --> A2
+Admin --> A3
+Admin --> A4
+Admin --> A5
+Admin --> A6
+Admin --> A7
+Admin --> A8
+Admin --> A9
+Admin --> A10
+Admin --> A11
+Admin --> A12
+Admin --> A13
+Admin --> A14
+Admin --> A15
+Admin --> A16
+Admin --> A17
+Admin --> A18
+Admin --> A19
+Admin --> A20
+Admin --> A21
+Admin --> A22
+Admin --> A23
+
+' ─────────────────────────────────────────────────────
+'  RELASI STAFF
+' ─────────────────────────────────────────────────────
+Staff --> S1
+Staff --> S2
+Staff --> S3
+Staff --> S4
+Staff --> S5
+Staff --> S6
+Staff --> S7
+Staff --> S8
+Staff --> S9
+Staff --> S10
+Staff --> S11
+Staff --> S12
+Staff --> S13
+Staff --> S14
+Staff --> S15
+Staff --> S16
+Staff --> S17
+
+' ─────────────────────────────────────────────────────
+'  RELASI PELANGGAN
+' ─────────────────────────────────────────────────────
+Pelanggan --> P1
+Pelanggan --> P2
+Pelanggan --> P3
+Pelanggan --> P4
+Pelanggan --> P5
+Pelanggan --> P6
+
+' ─────────────────────────────────────────────────────
+'  INCLUDE / EXTEND (minimal & tidak silang)
+' ─────────────────────────────────────────────────────
+S10 .> S11 : <<include>>
+S10 .> S12 : <<include>>
+S10 .> S13 : <<include>>
+S10 .> S14 : <<extend>>
+S10 .> S8  : <<include>>
+
+S15 .> S10 : <<include>>
+S15 .> A9  : <<include>>
+
+A8  .> S9  : <<extend>>
+A9  .> S9  : <<extend>>
+
+A11 .> A14 : <<include>>
+A11 .> A15 : <<include>>
+A12 .> A16 : <<extend>>
+A13 .> A16 : <<extend>>
+
+@enduml

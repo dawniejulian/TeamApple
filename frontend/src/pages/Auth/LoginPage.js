@@ -11,11 +11,21 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { isLoading, error, token } = useSelector((state) => state.auth);
+  const { isLoading, error, token, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (token) navigate('/');
-  }, [token, navigate]);
+    if (!token) {
+      return;
+    }
+
+    const role = String(user?.role || '').toUpperCase();
+    if (role === 'ADMIN' || role === 'STAFF') {
+      navigate('/pos');
+      return;
+    }
+
+    navigate('/');
+  }, [token, user, navigate]);
 
   useEffect(() => {
     if (error) {
@@ -29,6 +39,11 @@ export default function LoginPage() {
     const result = await dispatch(loginUser({ username, password }));
     if (loginUser.fulfilled.match(result)) {
       toast.success(`Selamat datang, ${result.payload.user.first_name || result.payload.user.username}!`);
+      const role = String(result.payload.user.role || '').toUpperCase();
+      if (role === 'ADMIN' || role === 'STAFF') {
+        navigate('/pos');
+        return;
+      }
       navigate('/');
     }
   };
@@ -37,11 +52,7 @@ export default function LoginPage() {
     <div className="w-full max-w-md">
       <div className="glass-panel login-card p-8 sm:p-9">
         <div className="text-center mb-8">
-          <span className="hourglass-chip mb-3">
-            <span className="hourglass-core" />
-            Hourglass Flow
-          </span>
-          <h1 className="text-3xl font-extrabold brand-gradient-text">KASIRIN</h1>
+          <h1 className="text-3xl font-extrabold brand-gradient-text">TeamApple.Hub</h1>
           <p className="text-blue-800/70 mt-2 text-sm sm:text-base">Sistem Manajemen Stok & Penjualan</p>
         </div>
 
@@ -93,7 +104,6 @@ export default function LoginPage() {
         <div className="mt-6 p-4 rounded-xl border border-blue-200/70 bg-white/70 text-sm text-blue-900/80 space-y-1">
           <p className="font-semibold text-blue-800">Akun Tersedia:</p>
           <p>👤 <strong>admin</strong> / admin123 (Administrator)</p>
-          <p>👤 <strong>manager</strong> / manager123 (Manager)</p>
           <p>👤 <strong>staff1</strong> / staff123 (Staff)</p>
         </div>
       </div>

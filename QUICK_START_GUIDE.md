@@ -1,23 +1,29 @@
 # 📚 KASIRIN QUICK REFERENCE GUIDE
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Production Ready ✅  
-**Last Updated:** March 12, 2026
+**Last Updated:** April 21, 2026
 
 ---
 
 ## 🎯 WHAT YOU HAVE
 
-A complete, production-grade **Point-of-Sale (POS) & Inventory Management System** for your Apple store.
+A complete, production-grade **Point-of-Sale (POS), Inventory Management, and Store Information Website System** for your Apple store.
 
 - ✅ Full POS system with sales tracking
 - ✅ Real-time inventory management
 - ✅ Cashier shift reconciliation
 - ✅ Supplier purchase order system
 - ✅ Business intelligence & reports
+- ✅ Public website for store and product information
 - ✅ Role-based user access
 - ✅ Automated audit logging
 - ✅ Mobile-responsive UI
+
+### System Scope Clarification
+- POS module is used for internal cashier transactions (staff only)
+- Dashboard module is used for store operations and management
+- Website module is used as public information media (not for customer checkout)
 
 ---
 
@@ -119,6 +125,16 @@ docker-compose up -d --build
 
 **Who uses it:** Owner, Manager  
 **Access:** Settings → Users
+
+### 7️⃣ **Website Informasi Toko**
+- Menampilkan profil toko
+- Menampilkan informasi produk dan kategori
+- Menampilkan kontak, alamat, dan jam operasional
+- Menyampaikan promosi/informasi terbaru
+- Menjadi media informasi publik, bukan kanal transaksi langsung
+
+**Who uses it:** Customer (public), Marketing/Admin (content updates)
+**Access:** Public website route (for example `/teamapple`)
 
 ---
 
@@ -423,6 +439,7 @@ docker exec -i kasirin_db psql -U postgres kasirin_db < backup_DATE.sql
 - Daily POS sales are recorded accurately
 - Inventory counts match database
 - Shift reconciliation is automatic
+- Public website information is accessible and up to date
 - Staff login with proper permissions
 - Reports available for analysis
 - No lost data (backups working)
@@ -465,7 +482,7 @@ Everything is ready. The system is:
 
 ---
 
-*Kasirin POS System - Making Your Store Smart & Connected*
+*Kasirin POS & Store Information System - Making Your Store Smart & Connected*
 
 Good luck! 🚀
 

@@ -1,11 +1,28 @@
 // frontend/src/pages/Dashboard/DashboardPage.js
 import React, { useEffect, useState } from 'react';
-import { FiDollarSign, FiPackage, FiShoppingCart, FiAlertCircle } from 'react-icons/fi';
+import { FiPackage, FiShoppingCart, FiAlertCircle } from 'react-icons/fi';
 import api from '../../services/api';
+
+const RupiahIcon = ({ className = '' }) => (
+  <span className={`${className} font-bold leading-none`}>Rp</span>
+);
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState(null);
   const [topProducts, setTopProducts] = useState([]);
+
+  const formatNominal = (value) => {
+    const amount = Number(value) || 0;
+    return new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(amount);
+  };
+
+  const getNominalClass = (value) => {
+    const length = formatNominal(value).length;
+
+    if (length >= 16) return 'text-xl';
+    if (length >= 13) return 'text-2xl';
+    return 'text-3xl';
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -26,11 +43,11 @@ export default function DashboardPage() {
   const StatCard = ({ icon: Icon, label, value, color }) => (
     <div className="card flex items-center space-x-4 section-enter">
       <div className={`p-3 rounded-xl shadow-lg ${color}`}>
-        <Icon size={32} className="text-white" />
+        <Icon className="text-white text-4xl" />
       </div>
-      <div>
+      <div className="min-w-0">
         <p className="text-blue-800/75 text-sm">{label}</p>
-        <p className="text-2xl font-bold text-blue-950">{value}</p>
+        <p className={`font-bold text-blue-950 leading-tight break-words ${getNominalClass(value)}`}>{value}</p>
       </div>
     </div>
   );
@@ -42,9 +59,9 @@ export default function DashboardPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          icon={FiDollarSign}
+          icon={RupiahIcon}
           label="Penjualan Hari Ini"
-          value={`Rp ${summary?.today?.total_revenue || 0}`}
+          value={formatNominal(summary?.today?.total_revenue)}
           color="bg-gradient-to-br from-emerald-400 to-emerald-600"
         />
         <StatCard

@@ -13,34 +13,32 @@ import {
   FiLogOut,
   FiClock,
   FiTruck,
-  FiMonitor,
 } from 'react-icons/fi';
 import { logoutUser } from '../../store/slices/authSlice';
 
 const ALL_MENU_ITEMS = [
-  { icon: FiHome,       label: 'Dashboard',      path: '/',               roles: ['ADMIN','MANAGER','STAFF','VIEWER'] },
-  { icon: FiBox,        label: 'Produk',          path: '/products',       roles: ['ADMIN','MANAGER'] },
-  { icon: FiShoppingCart, label: 'Stok',          path: '/inventory',      roles: ['ADMIN','MANAGER','STAFF'] },
-  { icon: FiTrendingUp, label: 'Penjualan',       path: '/sales',          roles: ['ADMIN','MANAGER','STAFF'] },
-  { icon: FiMonitor,    label: 'Display Pelanggan', path: '/customer-display', roles: ['ADMIN','MANAGER','STAFF'] },
-  { icon: FiClock,      label: 'Shift',           path: '/shifts',         roles: ['ADMIN','MANAGER','STAFF'] },
-  { icon: FiTruck,      label: 'Purchase Order',  path: '/purchase-orders',roles: ['ADMIN','MANAGER'] },
-  { icon: FiPrinter,    label: 'Cetak Struk',     path: '/receipt',        roles: ['ADMIN','MANAGER','STAFF'] },
-  { icon: FiTrendingUp, label: 'Laporan',          path: '/reports',        roles: ['ADMIN','MANAGER','VIEWER'] },
-  { icon: FiSettings,   label: 'Pengaturan',      path: '/settings',       roles: ['ADMIN'] },
+  { icon: FiHome,         label: 'Dashboard',      path: '/dashboard',       roles: ['ADMIN', 'STAFF'] },
+  { icon: FiBox,          label: 'Produk',          path: '/products',        roles: ['ADMIN', 'STAFF'] },
+  { icon: FiShoppingCart, label: 'Stok',            path: '/inventory',       roles: ['ADMIN', 'STAFF'] },
+  { icon: FiTrendingUp,   label: 'Kasir POS',       path: '/pos',             roles: ['ADMIN', 'STAFF'] },
+  { icon: FiClock,        label: 'Shift',           path: '/shifts',          roles: ['ADMIN', 'STAFF'] },
+  { icon: FiTruck,        label: 'Purchase Order',  path: '/purchase-orders', roles: ['ADMIN', 'STAFF'] },
+  { icon: FiPrinter,      label: 'Cetak Struk',     path: '/receipt',         roles: ['ADMIN', 'STAFF'], hidden: true },
+  { icon: FiTrendingUp,   label: 'Laporan',          path: '/reports',         roles: ['ADMIN', 'STAFF'] },
+  { icon: FiSettings,    label: 'Pengaturan',       path: '/settings',        roles: ['ADMIN'] },
 ];
 
 export default function Sidebar({ isOpen, onToggle }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const role = user?.role || 'STAFF';
-  const menuItems = ALL_MENU_ITEMS.filter((item) => item.roles.includes(role));
+  const role = String(user?.role || 'STAFF').toUpperCase();
+  const menuItems = ALL_MENU_ITEMS.filter((item) => item.roles.includes(role) && !item.hidden);
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
     toast.info('Anda telah logout');
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -52,7 +50,7 @@ export default function Sidebar({ isOpen, onToggle }) {
       <div className="p-5 pb-4 border-b border-blue-200/60 flex items-center justify-between">
         <div className="min-w-0">
           <h1 className={`font-extrabold text-lg tracking-tight text-[#28427a] ${isOpen ? '' : 'text-center'}`}>
-            {isOpen ? 'KASIRIN' : 'KS'}
+            {isOpen ? 'TeamApple.Hub' : 'TAH'}
           </h1>
         </div>
         {isOpen && (

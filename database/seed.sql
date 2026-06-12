@@ -53,7 +53,7 @@ VALUES (
   'admin@kasirin.com',
   '$2b$10$KIXxPfxjYTgFxQpLMhTkJO/fFM6lKZH5KLvMeWt4r3LKT8R9DhXvS', -- admin123 hashed
   'Admin',
-  'Kasirin',
+  '',
   '0812-1111-1111',
   1,
   (SELECT id FROM outlets WHERE is_main_office = true LIMIT 1),

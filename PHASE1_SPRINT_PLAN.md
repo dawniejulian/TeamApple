@@ -6,6 +6,140 @@
 
 ---
 
+## 📚 ARSITEKTUR SISTEM KASIRIN
+
+### 🐳 Docker
+
+**Definisi & Fungsi:**
+Docker adalah platform containerization yang mengemas aplikasi beserta semua dependencies-nya dalam satu unit yang dapat dijalankan di mana saja. Dalam sistem KASIRIN, Docker memastikan konsistensi lingkungan development, testing, dan production.
+
+**Komponen Docker di KASIRIN:**
+- **Backend Container**: Node.js server yang berjalan di port 5001
+- **Frontend Container**: React app yang di-serve via Nginx di port 3000
+- **PostgreSQL Database**: Database container untuk data store
+- **docker-compose.yml**: Orchestration file yang mengatur ketiga service agar dapat berkomunikasi
+
+**Keuntungan:**
+- ✅ Environment yang konsisten (Dev, Test, Prod sama persis)
+- ✅ Dependency isolation (tidak perlu install manually)
+- ✅ Mudah di-scale dan di-deploy
+- ✅ Kompatibel dengan Cloud (Azure Container Apps, Kubernetes)
+
+**Perintah Utama:**
+```bash
+# Build image
+docker build -t kasirin-backend:latest ./backend
+docker build -t kasirin-frontend:latest ./frontend
+
+# Jalankan dengan compose
+docker-compose up -d
+
+# Stop service
+docker-compose down
+```
+
+---
+
+### 💻 Frontend
+
+**Definisi & Fungsi:**
+Frontend adalah interface (UI/UX) yang digunakan oleh pengguna akhir untuk berinteraksi dengan sistem KASIRIN. Dibangun dengan React dan Tailwind CSS untuk responsiveness dan user experience yang baik.
+
+**Technology Stack:**
+- **Framework**: React 18+ (component-based UI)
+- **State Management**: Redux (for complex state handling)
+- **Styling**: Tailwind CSS + PostCSS (utility-first CSS)
+- **HTTP Client**: Axios (communicate with backend API)
+- **Build Tool**: Create React App (CRA)
+- **Server**: Nginx (production-grade web server)
+
+**Fitur Utama Frontend KASIRIN:**
+1. **Authentication Page**: Login untuk semua role (Admin, Manager, Kasir, Warehouse)
+2. **Dashboard**: Overview toko (sales, inventory, shifts)
+3. **Sales Module**: Interface untuk mencatat penjualan
+4. **Inventory Module**: Manajemen stok produk
+5. **User Management**: CRUD user dengan role-based access
+6. **Reports**: Laporan penjualan, inventory, shift
+7. **Settings**: Konfigurasi outlet, preferensi user
+
+**Folder Struktur Frontend:**
+```
+frontend/
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── pages/         # Page containers (Dashboard, Sales, etc)
+│   ├── services/      # API calls (api.js)
+│   ├── store/         # Redux state management
+│   ├── utils/         # Helper functions (export, formatters)
+│   └── App.js         # Root component
+├── public/            # Static assets
+└── Dockerfile         # Container config
+```
+
+**Alur Data Frontend:**
+```
+User Input → Component State → Redux Store → API Call → Backend → Response → Redux Update → Re-render
+```
+
+---
+
+### 🔧 Backend
+
+**Definisi & Fungsi:**
+Backend adalah server-side application yang menangani business logic, autentikasi, validasi data, dan komunikasi dengan database. Dibangun dengan Node.js + Express untuk REST API yang scalable.
+
+**Technology Stack:**
+- **Runtime**: Node.js (JavaScript runtime untuk server)
+- **Framework**: Express (web framework untuk routing & middleware)
+- **Database**: PostgreSQL (relational database yang robust)
+- **Authentication**: JWT (JSON Web Tokens) + bcryptjs (password hashing)
+- **Validation**: express-validator (input validation)
+- **Email**: nodemailer (for notifications)
+- **Middleware**: CORS, body-parser, morgan (logging)
+
+**Fitur Utama Backend KASIRIN:**
+1. **Authentication System**: Login, token generation, password hashing
+2. **User Management**: CRUD, role assignment, permission checking
+3. **Product Management**: Inventory tracking, stock in/out
+4. **Sales Processing**: Order creation, payment, receipt generation
+5. **Shift Management**: Shift creation, cashier assignment, settlement
+6. **Integration APIs**: Third-party system integration (if needed)
+7. **Reports Generation**: Sales, inventory, audit reports
+8. **AI Features**: Recommendation engine, price optimization
+
+**Folder Struktur Backend:**
+```
+backend/
+├── controllers/       # Business logic handlers
+├── routes/           # API endpoints definition
+├── middleware/       # Auth, logging, error handling
+├── config/           # Database connection, environment
+├── utils/            # Helper functions (email, formatting)
+├── scripts/          # Database seeding, migrations
+├── server.js         # Express app entry point
+└── Dockerfile        # Container config
+```
+
+**Alur Data Backend:**
+```
+HTTP Request → Express Router → Authentication Middleware → 
+Role Check → Validation → Controller Logic → Database Query → 
+Response Formatting → HTTP Response
+```
+
+**Key API Endpoints:**
+```
+POST   /api/auth/login              - User authentication
+GET    /api/users                   - List all users
+POST   /api/users                   - Create new user
+PUT    /api/users/:id               - Update user
+GET    /api/products                - List products
+POST   /api/sales                   - Create sale order
+GET    /api/reports/sales           - Generate sales report
+```
+
+---
+
 ## 🎯 PHASE 1A: FOUNDATION (Week 1 - Days 1-4)
 
 ### ✅ DAY 1 (March 11): Database Migration & Seed

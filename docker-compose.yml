@@ -36,11 +36,16 @@ services:
       NODE_ENV: production
       JWT_SECRET: kasirin_jwt_secret_2024_secure
       FRONTEND_URL: http://localhost:3001
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
     ports:
       - "5001:5000"
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./backend/uploads:/app/uploads
     networks:
       - kasirin_network
     restart: unless-stopped
@@ -51,17 +56,18 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        REACT_APP_API_URL: http://localhost:5001/api
+        REACT_APP_API_URL: AUTO
     container_name: kasirin_frontend
     ports:
       - "3001:3000"
+      - "3002:3443"
     depends_on:
       - backend
     networks:
       - kasirin_network
     restart: unless-stopped
     environment:
-      REACT_APP_API_URL: http://localhost:5001/api
+      REACT_APP_API_URL: AUTO
 
 volumes:
   postgres_data:

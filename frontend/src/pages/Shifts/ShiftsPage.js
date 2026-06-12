@@ -12,6 +12,16 @@ export default function ShiftsPage() {
   const [showCloseForm, setShowCloseForm] = useState(false);
   const [closeData, setCloseData] = useState({ actual_amount: '', notes: '' });
 
+  const format24h = (dateStr) => {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '-';
+    const pad = (num) => String(num).padStart(2, '0');
+    const date = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+    const time = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+    return `${date} ${time}`;
+  };
+
   useEffect(() => {
     fetchShifts();
     fetchCurrentShift();
@@ -98,7 +108,7 @@ export default function ShiftsPage() {
                 Shift Aktif
               </h2>
               <p className="text-gray-600 mt-2">
-                Dibuka: {new Date(currentShift.opened_at).toLocaleString('id-ID')}
+                Kasir: <strong className="text-blue-900">{currentShift.first_name || currentShift.username}</strong> | Dibuka: {format24h(currentShift.opened_at)}
               </p>
               <p className="text-lg font-semibold mt-3">
                 Float: Rp {parseInt(currentShift.float_amount).toLocaleString('id-ID')}
@@ -218,19 +228,25 @@ export default function ShiftsPage() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="table-head">
-                <th className="pb-3">Tanggal Buka</th>
+                <th className="pb-3">Kasir</th>
+                <th className="pb-3">Waktu Buka / Tutup (24 Jam)</th>
                 <th className="pb-3">Float</th>
                 <th className="pb-3">Penjualan</th>
                 <th className="pb-3">Ekspektasi</th>
                 <th className="pb-3">Selisih</th>
                 <th className="pb-3">Status</th>
+                <th className="pb-3">Catatan</th>
               </tr>
             </thead>
             <tbody>
               {shifts.map((shift) => (
                 <tr key={shift.id} className="table-row">
                   <td className="py-3">
-                    {new Date(shift.opened_at).toLocaleString('id-ID')}
+                    <span className="font-semibold text-blue-950">{shift.first_name || shift.username || 'Staf'}</span>
+                  </td>
+                  <td className="py-3 text-xs">
+                    <div className="flex items-center"><span className="text-green-700 font-bold text-[10px] uppercase bg-green-50 px-1 py-0.5 rounded border border-green-200 mr-1.5 w-12 text-center">Buka</span> {format24h(shift.opened_at)}</div>
+                    <div className="mt-1 flex items-center"><span className="text-red-700 font-bold text-[10px] uppercase bg-red-50 px-1 py-0.5 rounded border border-red-200 mr-1.5 w-12 text-center">Tutup</span> {shift.closed_at ? format24h(shift.closed_at) : <span className="text-emerald-600 font-semibold">Aktif (Belum Tutup)</span>}</div>
                   </td>
                   <td className="py-3">
                     Rp {parseInt(shift.float_amount).toLocaleString('id-ID')}
@@ -256,6 +272,9 @@ export default function ShiftsPage() {
                         <FiAlertCircle size={16} /> Selisih
                       </span>
                     )}
+                  </td>
+                  <td className="py-3 text-xs text-gray-600 max-w-[150px] truncate" title={shift.discrepancy_notes || ''}>
+                    {shift.discrepancy_notes || '-'}
                   </td>
                 </tr>
               ))}

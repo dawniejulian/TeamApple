@@ -39,7 +39,7 @@ export const exportToPDF = (filename, title, columns, data) => {
       },
     });
 
-    pdf.APPve(`${filename}.pdf`);
+    pdf.save(`${filename}.pdf`);
   } catch (error) {
     console.error('Error exporting PDF:', error);
     throw error;

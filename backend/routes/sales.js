@@ -2,10 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireStoreDevice } = require('../middleware/auth');
+const { ensureActivityLogsTable, logActivity } = require('../utils/dbHelpers');
 
 // Apply auth to all sales routes
 router.use(authenticateToken);
+// POST/PUT routes also require staff to be on a registered store device
 
 /**
  * @route   GET /api/sales
@@ -120,7 +122,7 @@ router.get('/:id', async (req, res) => {
  * @desc    Create new sale transaction
  * @access  Private
  */
-router.post('/', async (req, res) => {
+router.post('/', requireStoreDevice, async (req, res) => {
   try {
     const {
       sales_channel_id,
@@ -129,7 +131,8 @@ router.post('/', async (req, res) => {
       items,
       discount_amount,
       tax_amount,
-      payment_method
+      payment_method,
+      notes
     } = req.body;
 
     const user_id = req.user?.id || 1;
@@ -145,6 +148,13 @@ router.post('/', async (req, res) => {
 
     try {
       await client.query('BEGIN');
+
+      // Get currently active shift ID for this user
+      const shiftQuery = await client.query(
+        `SELECT id FROM cashier_shifts WHERE user_id = $1 AND closed_at IS NULL LIMIT 1`,
+        [user_id]
+      );
+      const shiftId = shiftQuery.rows.length > 0 ? shiftQuery.rows[0].id : null;
 
       // Generate invoice number
       const invoiceResult = await client.query(`
@@ -166,10 +176,10 @@ router.post('/', async (req, res) => {
       // Create sale
       const saleResult = await client.query(`
         INSERT INTO sales 
-        (invoice_number, sales_channel_id, customer_name, customer_phone, subtotal, discount_amount, tax_amount, total_amount, payment_method, sales_staff_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        (invoice_number, sales_channel_id, customer_name, customer_phone, subtotal, discount_amount, tax_amount, total_amount, payment_method, sales_staff_id, cashier_shift_id, notes)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING *
-      `, [invoiceNumber, sales_channel_id, customer_name, customer_phone, subtotal, totalDiscount, totalTax, totalAmount, payment_method, user_id]);
+      `, [invoiceNumber, sales_channel_id, customer_name || 'Walk-in Customer', customer_phone || null, subtotal, totalDiscount, totalTax, totalAmount, payment_method || 'CASH', user_id, shiftId, notes || null]);
 
       const saleId = saleResult.rows[0].id;
 
@@ -203,13 +213,26 @@ router.post('/', async (req, res) => {
         INSERT INTO daily_sales_summary (sale_date, total_sales_count, total_revenue, total_discount, total_items_sold)
         VALUES (CURRENT_DATE, 1, $1, $2, $3)
         ON CONFLICT (sale_date) DO UPDATE SET
-          total_sales_count = total_sales_count + 1,
-          total_revenue = total_revenue + $1,
-          total_discount = total_discount + $2,
-          total_items_sold = total_items_sold + $3
+          total_sales_count = daily_sales_summary.total_sales_count + 1,
+          total_revenue = daily_sales_summary.total_revenue + $1,
+          total_discount = daily_sales_summary.total_discount + $2,
+          total_items_sold = daily_sales_summary.total_items_sold + $3
       `, [totalAmount, totalDiscount, items.length]);
 
       await client.query('COMMIT');
+
+      // Log activity
+      const deviceId = req.headers['x-device-id'];
+      const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+      await logActivity({
+        userId: user_id,
+        username: req.user?.username,
+        action: 'BUAT_TRANSAKSI',
+        description: `Transaksi ${invoiceNumber} sebesar Rp ${totalAmount.toLocaleString('id-ID')}`,
+        meta: { invoice_number: invoiceNumber, total_amount: totalAmount, items_count: items.length },
+        deviceId,
+        ipAddress
+      });
 
       res.status(201).json({
         status: 'SUCCESS',
@@ -284,7 +307,7 @@ router.get('/report/daily', async (req, res) => {
  * @desc    Create new sale transaction (simplified - single item)
  * @access  Private
  */
-router.post('/simple', async (req, res) => {
+router.post('/simple', requireStoreDevice, async (req, res) => {
   try {
     const {
       product_id,
@@ -311,6 +334,13 @@ router.post('/simple', async (req, res) => {
     try {
       await client.query('BEGIN');
 
+      // Get currently active shift ID for this user
+      const shiftQuery = await client.query(
+        `SELECT id FROM cashier_shifts WHERE user_id = $1 AND closed_at IS NULL LIMIT 1`,
+        [user_id]
+      );
+      const shiftId = shiftQuery.rows.length > 0 ? shiftQuery.rows[0].id : null;
+
       // Get product details
       const productResult = await client.query(`
         SELECT id, selling_price FROM products WHERE id = $1
@@ -336,10 +366,10 @@ router.post('/simple', async (req, res) => {
       // Create sale
       const saleResult = await client.query(`
         INSERT INTO sales 
-        (invoice_number, sales_channel_id, customer_name, customer_phone, subtotal, total_amount, payment_method, sales_staff_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (invoice_number, sales_channel_id, customer_name, customer_phone, subtotal, total_amount, payment_method, sales_staff_id, notes, cashier_shift_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *
-      `, [invoiceNumber, sales_channel_id, customer_name || 'Walk-in Customer', customer_phone || null, subtotal, totalAmount, payment_method || 'CASH', user_id]);
+      `, [invoiceNumber, sales_channel_id, customer_name || 'Walk-in Customer', customer_phone || null, subtotal, totalAmount, payment_method || 'CASH', user_id, notes || null, shiftId]);
 
       const saleId = saleResult.rows[0].id;
 
@@ -366,6 +396,19 @@ router.post('/simple', async (req, res) => {
       `, [product_id, quantity, saleId, notes || null, user_id]);
 
       await client.query('COMMIT');
+
+      // Log activity
+      const deviceId = req.headers['x-device-id'];
+      const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+      await logActivity({
+        userId: user_id,
+        username: req.user?.username,
+        action: 'BUAT_TRANSAKSI',
+        description: `Transaksi ${invoiceNumber} sebesar Rp ${totalAmount.toLocaleString('id-ID')}`,
+        meta: { invoice_number: invoiceNumber, total_amount: totalAmount, product_id },
+        deviceId,
+        ipAddress
+      });
 
       res.status(201).json({
         status: 'SUCCESS',

@@ -2,7 +2,9 @@
 
 ## Overview
 
-Kasirin API adalah RESTful API untuk sistem manajemen stok dan penjualan toko Apple. API ini dibangun dengan Express.js dan PostgreSQL.
+Kasirin API adalah RESTful API untuk sistem POS internal, manajemen stok, dan operasional toko Apple. API ini dibangun dengan Express.js dan PostgreSQL.
+
+Catatan ruang lingkup: website publik pada sistem ini berfungsi sebagai media informasi toko, bukan kanal transaksi checkout pelanggan.
 
 **Base URL**: `http://localhost:5000/api`
 
@@ -257,7 +259,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 4. Sales
+### 4. Sales (POS Internal)
 
 #### Get All Sales
 ```http
@@ -270,6 +272,8 @@ Authorization: Bearer <token>
 - `status` (optional): COMPLETED, PENDING, CANCELLED
 - `start_date` (optional): Start date
 - `end_date` (optional): End date
+
+Catatan: endpoint sales digunakan untuk pencatatan transaksi operasional internal (kasir/admin), bukan transaksi langsung dari website publik.
 
 **Response**:
 ```json
@@ -482,4 +486,4 @@ api.get('/products')
 
 ---
 
-**Last Updated**: March 2026
+**Last Updated**: April 2026

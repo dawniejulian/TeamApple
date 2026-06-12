@@ -1,0 +1,288 @@
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="TeamApple - Apple Store iPad Jogja. Belanja produk Apple original dengan pelayanan cepat dan aman."
+    />
+    <title>TeamApple | Apple Store Jogja</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-glow bg-glow-top"></div>
+    <div class="bg-glow bg-glow-bottom"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="TeamApple Home">
+        <span class="brand-dot"></span>
+        <span class="brand-text">TeamApple</span>
+      </a>
+
+      <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav">
+        Menu
+      </button>
+
+      <nav id="main-nav" class="main-nav">
+        <a href="#katalog">Katalog</a>
+        <a href="#kenapa-kami">Kenapa Kami</a>
+        <a href="#info-kontak">Info &amp; Kontak</a>
+      </nav>
+
+      <a class="btn btn-primary hide-mobile" href="https://wa.me/6281229291435" target="_blank" rel="noreferrer">Chat WhatsApp</a>
+    </header>
+
+    <main>
+      <section id="home" class="hero section reveal">
+        <div class="hero-copy">
+          <p class="kicker">APPLE STORE | IPAD JOGJA</p>
+          <h1>
+            Beli iPad
+            <span>lebih tenang, lebih cepat.</span>
+          </h1>
+          <p class="lead">
+            TeamApple membantu kamu dapat produk Apple original dengan update stok yang jelas,
+            proses aman, dan respons cepat setiap hari.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://wa.me/6281229291435" target="_blank" rel="noreferrer">Order Sekarang</a>
+            <a class="btn btn-ghost" href="https://www.instagram.com/teamapple.id/" target="_blank" rel="noreferrer">Lihat Instagram</a>
+          </div>
+
+          <ul class="stats">
+            <li>
+              <strong>14.9K+</strong>
+              <span>Pengikut</span>
+            </li>
+            <li>
+              <strong>389+</strong>
+              <span>Postingan</span>
+            </li>
+            <li>
+              <strong>12+</strong>
+              <span>Tahun dipercaya</span>
+            </li>
+          </ul>
+        </div>
+
+        <aside class="hero-card">
+          <div class="logo-badge">team<br />apple.</div>
+          <h2>Update stok harian</h2>
+          <p>Model iPad, iPhone, sampai aksesoris yang lagi kamu cari.</p>
+          <ul>
+            <li>Original & terseleksi</li>
+            <li>Bisa konsultasi sebelum checkout</li>
+            <li>Pengiriman cepat area Indonesia</li>
+          </ul>
+          <a href="https://maps.app.goo.gl/GmLEXhNhgf7oGaC17" target="_blank" rel="noreferrer">Lihat lokasi toko</a>
+        </aside>
+      </section>
+
+      <section id="katalog" class="section reveal">
+        <div class="section-head">
+          <p class="kicker">KATALOG PRODUK</p>
+          <h2>Pilih perangkat Apple sesuai kebutuhanmu.</h2>
+        </div>
+
+        <div class="catalog-toolbar">
+          <div class="chip-group" role="tablist" aria-label="Filter produk">
+            <button class="chip is-active" data-filter="all" role="tab" aria-selected="true">Semua</button>
+            <button class="chip" data-filter="ipad" role="tab" aria-selected="false">iPad</button>
+            <button class="chip" data-filter="macbook" role="tab" aria-selected="false">MacBook</button>
+            <button class="chip" data-filter="iphone" role="tab" aria-selected="false">iPhone</button>
+            <button class="chip" data-filter="accessories" role="tab" aria-selected="false">Aksesoris</button>
+          </div>
+          <p class="catalog-count"><span id="catalogCount">0</span> produk ditampilkan</p>
+        </div>
+
+        <!-- Premium Glassmorphic Advanced Filter Panel -->
+        <div class="advanced-filters" style="background: rgba(16, 39, 65, 0.4); border: 1px solid rgba(152, 185, 230, 0.15); border-radius: 1.2rem; padding: 1.5rem; margin-top: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(10px);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.8rem;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: #fff; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; font-family: 'Sora', sans-serif;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #60a5fa;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"/></svg>
+              Filter Pencarian
+            </h3>
+            <button id="resetFiltersBtn" style="background: none; border: none; color: #ff6b6b; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+              Reset Filter
+            </button>
+          </div>
+          
+          <div class="advanced-filters-grid">
+            <!-- Price Range Filter -->
+            <div>
+              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Harga Maksimal</label>
+              <select id="filterPrice" style="width: 100%; background: #071422; border: 1px solid rgba(152, 185, 230, 0.2); border-radius: 8px; padding: 0.6rem; color: #fff; font-size: 0.85rem; outline: none; cursor: pointer;">
+                <option value="all">Semua Harga</option>
+                <option value="5m">Di bawah Rp 5 Juta</option>
+                <option value="15m">Rp 5 Juta - Rp 15 Juta</option>
+                <option value="25m">Rp 15 Juta - Rp 25 Juta</option>
+                <option value="above">Di atas Rp 25 Juta</option>
+              </select>
+            </div>
+            
+            <!-- Internal Memory Filter -->
+            <div>
+              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Internal Memory</label>
+              <select id="filterMemory" style="width: 100%; background: #071422; border: 1px solid rgba(152, 185, 230, 0.2); border-radius: 8px; padding: 0.6rem; color: #fff; font-size: 0.85rem; outline: none; cursor: pointer;">
+                <option value="all">Semua Memori</option>
+                <option value="64">64 GB</option>
+                <option value="128">128 GB</option>
+                <option value="256">256 GB</option>
+                <option value="512">512 GB</option>
+                <option value="1tb">1 TB / Lebih</option>
+              </select>
+            </div>
+            
+            <!-- Chip Filter -->
+            <div>
+              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Processor / Chip</label>
+              <select id="filterChip" style="width: 100%; background: #071422; border: 1px solid rgba(152, 185, 230, 0.2); border-radius: 8px; padding: 0.6rem; color: #fff; font-size: 0.85rem; outline: none; cursor: pointer;">
+                <option value="all">Semua Chip</option>
+                <option value="m1">Chip M1</option>
+                <option value="m2">Chip M2</option>
+                <option value="m3">Chip M3</option>
+                <option value="m4">Chip M4</option>
+                <option value="a-series">A-Series (Bionic)</option>
+              </select>
+            </div>
+            
+            <!-- Condition Filter -->
+            <div>
+              <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Kondisi Barang</label>
+              <select id="filterCondition" style="width: 100%; background: #071422; border: 1px solid rgba(152, 185, 230, 0.2); border-radius: 8px; padding: 0.6rem; color: #fff; font-size: 0.85rem; outline: none; cursor: pointer;">
+                <option value="all">Semua Kondisi</option>
+                <option value="baru">BNIB / Baru</option>
+                <option value="second">Second / Bekas</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="catalogGrid" class="product-grid"></div>
+
+        <div class="catalog-cta">
+          <p>Belum nemu model yang kamu cari? Chat admin untuk cek stok harian.</p>
+          <a class="btn btn-primary" href="https://wa.me/6281229291435" target="_blank" rel="noreferrer">Cek Stok via WhatsApp</a>
+        </div>
+      </section>
+
+      <section class="ticker-wrap reveal" aria-label="Info layanan TeamApple">
+        <div class="ticker-track">
+          <span>Original Product</span>
+          <span>Instant Delivery Jogja</span>
+          <span>Trusted by 14.9K+ Followers</span>
+          <span>Konsultasi Gratis</span>
+          <span>Update Stok Harian</span>
+          <span>Original Product</span>
+          <span>Instant Delivery Jogja</span>
+          <span>Trusted by 14.9K+ Followers</span>
+        </div>
+      </section>
+
+      <section id="kenapa-kami" class="section highlight reveal">
+        <div class="section-head">
+          <p class="kicker">KENAPA TEAMAPPLE</p>
+          <h2>Bukan cuma jualan barang, kami bantu kamu ambil keputusan terbaik.</h2>
+        </div>
+        <div class="pillars">
+          <article>
+            <h3>Konsultasi jujur</h3>
+            <p>Kami arahkan sesuai kebutuhan, bukan sekadar yang paling mahal.</p>
+          </article>
+          <article>
+            <h3>Respons cepat</h3>
+            <p>Tim aktif menjawab chat untuk update stok, harga, dan estimasi kirim.</p>
+          </article>
+          <article>
+            <h3>Trusted store</h3>
+            <p>Sudah dipercaya ribuan pembeli dengan dokumentasi transaksi jelas.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===== INFO & KONTAK ===== -->
+      <section id="info-kontak" class="section reveal">
+        <div class="section-head">
+          <p class="kicker">INFO &amp; KONTAK</p>
+          <h2>Semua yang kamu butuhkan ada di sini.</h2>
+        </div>
+
+        <!-- Row 1: Instagram embed + Ulasan -->
+        <div class="info-kontak-grid">
+
+          <!-- Kiri: Instagram Embed -->
+          <div class="info-block">
+            <p class="info-block-label">📸 Official Instagram</p>
+            <div class="instagram-embed-shell">
+              <iframe
+                title="Instagram TeamApple"
+                src="https://www.instagram.com/teamapple.id/embed"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+              ></iframe>
+            </div>
+            <a class="btn btn-ghost" href="https://www.instagram.com/teamapple.id/" target="_blank" rel="noreferrer" style="margin-top:1rem; display:inline-block;">Buka @teamapple.id</a>
+          </div>
+
+          <!-- Kanan: Ulasan + Kontak -->
+          <div style="display:flex; flex-direction:column; gap:2rem;">
+
+
+
+            <!-- Kontak & Sosial Media -->
+            <div class="info-block">
+              <p class="info-block-label">📞 Kontak &amp; Sosial Media</p>
+              <div class="contact-list">
+                <a class="contact-item" href="https://wa.me/6281229291435" target="_blank" rel="noreferrer">
+                  <span class="contact-icon contact-icon--wa">WA</span>
+                  <div>
+                    <span class="contact-title">WhatsApp</span>
+                    <span class="contact-sub">0812-2929-1435</span>
+                  </div>
+                  <svg class="contact-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                </a>
+                <a class="contact-item" href="https://www.instagram.com/teamapple.id/" target="_blank" rel="noreferrer">
+                  <span class="contact-icon contact-icon--ig">IG</span>
+                  <div>
+                    <span class="contact-title">Instagram</span>
+                    <span class="contact-sub">@teamapple.id</span>
+                  </div>
+                  <svg class="contact-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                </a>
+
+                <a class="contact-item" href="https://maps.app.goo.gl/GmLEXhNhgf7oGaC17" target="_blank" rel="noreferrer">
+                  <span class="contact-icon contact-icon--maps">📍</span>
+                  <div>
+                    <span class="contact-title">Lokasi Toko</span>
+                    <span class="contact-sub">Lihat di Google Maps</span>
+                  </div>
+                  <svg class="contact-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                </a>
+              </div>
+            </div>
+
+          </div><!-- /Kanan -->
+        </div><!-- /info-kontak-grid -->
+      </section>
+    </main>
+
+    <footer class="site-footer reveal">
+      <div>
+        <h2>TeamApple</h2>
+        <p>Apple Store iPad Jogja</p>
+      </div>
+      <p class="copyright">&copy; <span id="year"></span> TeamApple. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

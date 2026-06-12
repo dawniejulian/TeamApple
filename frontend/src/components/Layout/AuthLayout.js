@@ -4,10 +4,16 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 export default function AuthLayout() {
-  const { token } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
 
-  // Already logged in - redirect to dashboard
-  if (token) return <Navigate to="/" replace />;
+  // Already logged in - send internal users to POS, customer to public site
+  if (token) {
+    const role = String(user?.role || '').toUpperCase();
+    if (role === 'ADMIN' || role === 'STAFF') {
+      return <Navigate to="/pos" replace />;
+    }
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="auth-shell flex items-center justify-center px-4 py-8 overflow-hidden">

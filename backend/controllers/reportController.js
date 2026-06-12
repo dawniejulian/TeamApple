@@ -72,11 +72,32 @@ class ReportController {
         { total_revenue: 0, total_transactions: 0, total_discounts: 0 }
       );
 
+      const salesListResult = await pool.query(
+        `SELECT s.id, s.invoice_number, s.created_at, s.total_amount, s.payment_method, s.notes,
+                COALESCE(NULLIF(TRIM(CONCAT(u.first_name, ' ', u.last_name)), ''), u.username) AS cashier_name,
+                r.name as role_name,
+                sc.name as channel_name,
+                COALESCE(
+                  (SELECT string_agg(concat(p.name, ' (x', si.quantity, ')'), ', ')
+                   FROM sale_items si
+                   JOIN products p ON si.product_id = p.id
+                   WHERE si.sale_id = s.id), ''
+                ) as items_summary
+         FROM sales s
+         LEFT JOIN users u ON s.sales_staff_id = u.id
+         LEFT JOIN roles r ON u.role_id = r.id
+         LEFT JOIN sales_channels sc ON s.sales_channel_id = sc.id
+         WHERE DATE(s.created_at) >= $1 AND DATE(s.created_at) <= $2
+         ORDER BY s.created_at DESC`,
+        [startDate, endDate]
+      );
+
       res.json({
         success: true,
         data: {
           ...summary,
-          daily_sales: dailyResult.rows
+          daily_sales: dailyResult.rows,
+          transactions: salesListResult.rows
         }
       });
     } catch (error) {
@@ -123,13 +144,17 @@ class ReportController {
       const query = `
         SELECT
           u.id,
-          COALESCE(NULLIF(TRIM(CONCAT(u.first_name, ' ', u.last_name)), ''), u.username) AS cashier_name,
+          CASE 
+            WHEN r.name = 'ADMIN' THEN 'Admin'
+            ELSE COALESCE(NULLIF(TRIM(CONCAT(u.first_name, ' ', u.last_name)), ''), u.username)
+          END AS cashier_name,
           COUNT(s.id)::int AS transaction_count,
           COALESCE(SUM(s.total_amount), 0) AS total_sales,
           COALESCE(SUM(s.discount_amount), 0) AS total_discounts
          FROM users u
+         JOIN roles r ON u.role_id = r.id AND r.name IN ('ADMIN', 'STAFF')
          LEFT JOIN sales s ON u.id = s.sales_staff_id ${dateFilter}
-         GROUP BY u.id, u.first_name, u.last_name, u.username
+         GROUP BY u.id, u.first_name, u.last_name, u.username, r.name
          ORDER BY total_sales DESC`;
 
       const result = await pool.query(query, params);

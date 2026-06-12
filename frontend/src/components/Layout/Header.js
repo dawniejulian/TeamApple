@@ -62,7 +62,7 @@ export default function Header({ onMenuClick }) {
   const handleLogout = async () => {
     await dispatch(logoutUser());
     toast.info('Anda telah logout');
-    navigate('/login');
+    navigate('/');
   };
 
   const handleToggleNotification = async () => {
@@ -102,7 +102,7 @@ export default function Header({ onMenuClick }) {
     ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username
     : 'Loading...';
 
-  const roleLabel = user?.role || '';
+  const roleLabel = String(user?.role || '').toUpperCase() === 'ADMIN' ? 'Admin / Pemilik' : 'Staff';
 
   return (
     <header className="px-3 pt-3 sm:px-5 sm:pt-5 relative z-20">

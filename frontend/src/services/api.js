@@ -1,26 +1,29 @@
 // frontend/src/services/api.js
 import axios from 'axios';
+import { getDeviceId } from '../utils/deviceFingerprint';
 
 // Determine API base URL based on environment
 const API_BASE_URL = (() => {
+  const envApiUrl = process.env.REACT_APP_API_URL;
+  const host = window.location.hostname;
+  const port = window.location.port;
+
   // Explicitly set via environment variable (for Docker builds)
-  if (process.env.REACT_APP_API_URL) {
+  if (envApiUrl && envApiUrl.toUpperCase() !== 'AUTO') {
     // If it's a full URL, use as-is
-    if (process.env.REACT_APP_API_URL.includes('://')) {
-      return process.env.REACT_APP_API_URL;
+    if (envApiUrl.includes('://')) {
+      return envApiUrl;
     }
     // Otherwise assume it's a path and prepend origin
-    return window.location.origin + process.env.REACT_APP_API_URL;
+    return window.location.origin + envApiUrl;
   }
   
-  // Smart detection: if frontend is on port 3001 (Docker host binding)
-  // then backend should be on 5001 (Docker host binding)
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    // Replace port with 5001 (backend port)
-    return `http://${window.location.hostname}:5001/api`;
+  // If we are in local development (running React dev server on port 3000)
+  if (port === '3000') {
+    return `http://${host}:5001/api`;
   }
   
-  // Fallback: use relative path
+  // Otherwise (running via Nginx in Docker on port 3001, 3002, etc.), use Nginx proxy relative path
   return '/api';
 })();
 
@@ -35,13 +38,15 @@ const instance = axios.create({
   withCredentials: false, // Changed to false to avoid CORS issues with localhost
 });
 
-// Attach JWT token to every request
+// Attach JWT token and Device ID to every request
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Always send device fingerprint so backend can verify kasir access
+    config.headers['X-Device-ID'] = getDeviceId();
     console.log(`[API] ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
     return config;
   },
@@ -73,7 +78,12 @@ instance.interceptors.response.use(
       console.error('[API] Base URL:', API_BASE_URL);
     }
     
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    if (
+      error.response?.status === 401 ||
+      (error.response?.status === 403 &&
+       (error.response?.data?.message?.toLowerCase().includes('token') ||
+        error.response?.data?.message?.toLowerCase().includes('kadaluarsa')))
+    ) {
       localStorage.removeItem('token');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';

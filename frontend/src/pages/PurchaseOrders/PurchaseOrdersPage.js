@@ -15,8 +15,17 @@ export default function PurchaseOrdersPage() {
     items: [{ product_id: '', quantity: '', price: '' }]
   });
   const [products, setProducts] = useState([]);
+  
+  // PO Detail & Status checklist modal states
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderItems, setOrderItems] = useState([]);
+  const [showDetail, setShowDetail] = useState(false);
+  const [statusUpdate, setStatusUpdate] = useState('');
+  const [statusNotes, setStatusNotes] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
   const { user } = useSelector((state) => state.auth);
-  const canManagePO = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+  const canManagePO = String(user?.role || '').toUpperCase() === 'ADMIN';
 
   useEffect(() => {
     fetchOrders();
@@ -71,13 +80,44 @@ export default function PurchaseOrdersPage() {
     }
   };
 
+  const handleOpenDetail = async (order) => {
+    try {
+      const res = await api.get(`/purchase-orders/${order.id}`);
+      setSelectedOrder(res.data.data.po);
+      setOrderItems(res.data.data.items || []);
+      setStatusUpdate(res.data.data.po.status);
+      setStatusNotes(res.data.data.po.notes || '');
+      setShowDetail(true);
+    } catch (error) {
+      toast.error('Gagal mengambil detail PO');
+    }
+  };
+
+  const handleUpdateStatus = async () => {
+    setUpdatingStatus(true);
+    try {
+      await api.put(`/purchase-orders/${selectedOrder.id}/status`, {
+        status: statusUpdate,
+        notes: statusNotes
+      });
+      toast.success('Status PO berhasil diperbarui');
+      setShowDetail(false);
+      fetchOrders();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Gagal memperbarui status PO');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       'DRAFT': 'bg-gray-200 text-gray-800',
       'APPROVED': 'bg-blue-200 text-blue-800',
       'SENT': 'bg-yellow-200 text-yellow-800',
       'PARTIAL': 'bg-orange-200 text-orange-800',
-      'RECEIVED': 'bg-green-200 text-green-800'
+      'RECEIVED': 'bg-green-200 text-green-800',
+      'CANCELLED': 'bg-red-200 text-red-800'
     };
     return colors[status] || 'bg-gray-200 text-gray-800';
   };
@@ -232,9 +272,9 @@ export default function PurchaseOrdersPage() {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id} className="table-row">
-                <td className="py-3 font-semibold">PO-{String(order.id).padStart(5, '0')}</td>
-                <td className="py-3">{order.supplier_name}</td>
-                <td className="py-3 font-semibold">
+                <td className="py-3 font-semibold text-blue-950">PO-{String(order.id).padStart(5, '0')}</td>
+                <td className="py-3 text-blue-900/90">{order.supplier_name}</td>
+                <td className="py-3 font-semibold text-blue-950">
                   Rp {parseInt(order.total_amount || 0).toLocaleString('id-ID')}
                 </td>
                 <td className="py-3">
@@ -242,11 +282,14 @@ export default function PurchaseOrdersPage() {
                     {order.status}
                   </span>
                 </td>
-                <td className="py-3">
+                <td className="py-3 text-blue-900/80">
                   {new Date(order.created_at).toLocaleDateString('id-ID')}
                 </td>
                 <td className="py-3">
-                  <button className="text-blue-600 hover:text-blue-800 font-semibold">
+                  <button 
+                    onClick={() => handleOpenDetail(order)}
+                    className="text-blue-600 hover:text-blue-800 font-semibold p-1 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
                     <FiEdit2 size={18} />
                   </button>
                 </td>
@@ -255,6 +298,120 @@ export default function PurchaseOrdersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* PO Detail & Status Checklist Modal */}
+      {showDetail && selectedOrder && (
+        <div className="modal-backdrop flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="modal-card rounded-2xl p-6 max-w-2xl w-full my-8 text-left">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-blue-950">Detail Purchase Order</h3>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(selectedOrder.status)}`}>
+                {selectedOrder.status}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4 text-sm text-blue-900/90 border-b pb-4">
+              <div>
+                <p><strong>No. PO:</strong> PO-{String(selectedOrder.id).padStart(5, '0')}</p>
+                <p><strong>Supplier:</strong> {selectedOrder.supplier_name}</p>
+                {selectedOrder.supplier_email && <p><strong>Email:</strong> {selectedOrder.supplier_email}</p>}
+              </div>
+              <div className="text-right">
+                <p><strong>Tgl Buat:</strong> {new Date(selectedOrder.created_at).toLocaleDateString('id-ID')}</p>
+                <p><strong>Total:</strong> Rp {parseInt(selectedOrder.total_amount || 0).toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+
+            <h4 className="font-semibold text-blue-900 mb-2 text-sm">Daftar Item</h4>
+            <div className="overflow-x-auto mb-4 border rounded-xl">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-blue-50/50 text-blue-950 border-b">
+                    <th className="p-3">Produk</th>
+                    <th className="p-3">SKU</th>
+                    <th className="p-3 text-right">Qty</th>
+                    <th className="p-3 text-right">Diterima</th>
+                    <th className="p-3 text-right">Harga</th>
+                    <th className="p-3 text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orderItems.map((item) => (
+                    <tr key={item.id} className="border-b last:border-b-0 hover:bg-gray-50/50">
+                      <td className="p-3 font-medium text-blue-950">{item.product_name}</td>
+                      <td className="p-3 font-mono">{item.sku}</td>
+                      <td className="p-3 text-right font-semibold">{item.quantity}</td>
+                      <td className="p-3 text-right text-green-600 font-semibold">{item.quantity_received || 0}</td>
+                      <td className="p-3 text-right">Rp {parseInt(item.unit_price || 0).toLocaleString('id-ID')}</td>
+                      <td className="p-3 text-right font-semibold">Rp {parseInt(item.line_total || 0).toLocaleString('id-ID')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Checklist / Status Update form */}
+            {canManagePO && (
+              <div className="border-t pt-4 mt-4 space-y-4">
+                <h4 className="font-semibold text-blue-950 text-sm">Perbarui Status Barang & PO</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-blue-900 block mb-1">Checklist Status PO</label>
+                    <select
+                      value={statusUpdate}
+                      onChange={(e) => setStatusUpdate(e.target.value)}
+                      className="form-input w-full"
+                    >
+                      <option value="DRAFT">Draft</option>
+                      <option value="APPROVED">Disetujui (Approved)</option>
+                      <option value="SENT">Sedang Dalam Perjalanan (In Transit / Sent)</option>
+                      <option value="RECEIVED">Telah Diterima (Received)</option>
+                      <option value="CANCELLED">Dibatalkan (Cancelled)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-blue-900 block mb-1">Catatan / Keterangan</label>
+                    <input
+                      type="text"
+                      value={statusNotes}
+                      onChange={(e) => setStatusNotes(e.target.value)}
+                      placeholder="Contoh: Nomor Resi, Ekspedisi, dll."
+                      className="form-input w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-1">
+                  <p className="font-semibold">💡 Catatan Alur Stok:</p>
+                  <p>• Mengubah ke status <strong>"Sedang Dalam Perjalanan"</strong> akan otomatis menambah angka <strong>"Stok Dipesan"</strong> pada inventori.</p>
+                  <p>• Mengubah ke status <strong>"Telah Diterima"</strong> akan otomatis memindahkan jumlah barang ke <strong>"Stok Tersedia"</strong> dan merekam log masuk stok.</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              {canManagePO && (
+                <button
+                  onClick={handleUpdateStatus}
+                  disabled={updatingStatus}
+                  className="flex-1 btn-primary disabled:opacity-50"
+                >
+                  {updatingStatus ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              )}
+              <button
+                onClick={() => setShowDetail(false)}
+                className="flex-1 btn-secondary"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

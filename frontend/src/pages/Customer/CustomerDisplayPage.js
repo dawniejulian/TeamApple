@@ -24,7 +24,7 @@ export default function CustomerDisplayPage() {
       return;
     }
 
-    navigate('/sales');
+    navigate('/pos');
   };
 
   const itemCount = useMemo(() => {
@@ -124,7 +124,7 @@ export default function CustomerDisplayPage() {
       <header className="px-8 py-6 border-b border-blue-200/30 bg-[#1d3562]/70 backdrop-blur">
         <div className="flex items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-wide">KASIRIN CUSTOMER VIEW</h1>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-wide">TEAMAPPLE.HUB CUSTOMER VIEW</h1>
             <p className="text-blue-100/90">
               {mode === 'ACTIVE_CART' ? 'Keranjang aktif sedang diproses kasir' : mode === 'PAID' ? 'Pembayaran berhasil' : 'Informasi transaksi terbaru untuk pelanggan'}
             </p>

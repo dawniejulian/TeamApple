@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="TeamApple Customer Account" />
+    <title>TeamApple | Customer Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #071321;
+        --panel: #0d2238;
+        --text: #e9f1ff;
+        --muted: #9ab2cc;
+        --brand: #4b74ff;
+        --brand2: #2e5cff;
+        --line: rgba(152, 185, 230, 0.18);
+        --ok: #2ac48a;
+        --err: #ff7373;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at 15% 10%, #10335c 0%, #071321 35%, #050d18 100%);
+        min-height: 100vh;
+      }
+      .wrap {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      .card {
+        width: min(760px, 100%);
+        background: linear-gradient(165deg, rgba(16, 39, 65, 0.96), rgba(8, 20, 36, 0.96));
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 20px 45px rgba(3, 11, 20, 0.45);
+      }
+      h1, h2 { font-family: "Sora", sans-serif; margin: 0; }
+      h1 { font-size: clamp(1.9rem, 3.8vw, 2.8rem); }
+      p { color: var(--muted); line-height: 1.7; }
+      .toplink {
+        display: inline-flex;
+        margin-bottom: 18px;
+        color: #b8d4ff;
+        text-decoration: none;
+      }
+      .switch {
+        display: inline-flex;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 16px;
+      }
+      .switch button {
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        padding: 10px 16px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .switch button.active {
+        background: linear-gradient(120deg, var(--brand), var(--brand2));
+        color: #fff;
+      }
+      .panel { display: none; margin-top: 18px; }
+      .panel.active { display: block; }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      label {
+        display: block;
+        font-size: 0.9rem;
+        color: #c7dbf2;
+        margin-bottom: 8px;
+      }
+      input {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+        border-radius: 14px;
+        padding: 14px 16px;
+        font: inherit;
+        outline: none;
+      }
+      input:focus { border-color: rgba(122, 181, 255, 0.7); }
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 12px 18px;
+        font-weight: 700;
+        text-decoration: none;
+        border: 1px solid transparent;
+        font: inherit;
+        cursor: pointer;
+      }
+      .primary {
+        background: linear-gradient(120deg, var(--brand), var(--brand2));
+        color: white;
+      }
+      .ghost {
+        border-color: var(--line);
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .ok { border-color: rgba(42, 196, 138, 0.5); color: #b8ffe2; }
+      .err { border-color: rgba(255, 115, 115, 0.55); color: #ffd4d4; }
+      .hint { font-size: 0.9rem; }
+      @media (max-width: 640px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <a class="toplink" href="/teamapple/">&larr; Kembali ke TeamApple</a>
+
+        <p style="letter-spacing:.16em;text-transform:uppercase;color:#54d4ff;font-weight:700;font-size:.78rem;margin-bottom:12px;">Portal Login TeamApple</p>
+        <h1>Login Admin &amp; Staff</h1>
+        <p>
+          Login untuk mengakses dashboard kasir TeamApple.
+        </p>
+
+        <div class="switch" role="tablist" aria-label="Pilih mode akun" style="display:none;">
+          <button id="loginTab" class="active" type="button" role="tab" aria-selected="true">Login</button>
+          <button id="registerTab" type="button" role="tab" aria-selected="false">Create Account</button>
+        </div>
+
+        <section id="loginPanel" class="panel active">
+          <form id="loginForm">
+            <div class="grid">
+              <div>
+                <label for="loginUsername">Nama Pengguna</label>
+                <input id="loginUsername" name="username" type="text" placeholder="Masukkan nama pengguna" required />
+              </div>
+              <div>
+                <label for="loginPassword">Password</label>
+                <input id="loginPassword" name="password" type="password" placeholder="Masukkan password" required />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn primary" id="loginBtn">Login</button>
+              <a class="btn ghost" href="/teamapple/">Kembali ke website</a>
+            </div>
+          </form>
+          <p class="hint" style="display:none;">Jika Anda customer baru dan belum punya akun, pilih tab <strong>Create Account</strong>.</p>
+        </section>
+
+        <section id="registerPanel" class="panel" style="display:none !important;">
+          <form id="registerForm">
+            <div class="grid">
+              <div>
+                <label for="registerName">Nama</label>
+                <input id="registerName" name="name" type="text" placeholder="Nama lengkap" required />
+              </div>
+              <div>
+                <label for="registerEmail">Email (Gmail)</label>
+                <input id="registerEmail" name="email" type="email" placeholder="contoh@gmail.com" required />
+              </div>
+              <div>
+                <label for="registerUsername">Nama Pengguna</label>
+                <input id="registerUsername" name="username" type="text" placeholder="Pilih nama pengguna" required />
+              </div>
+              <div>
+                <label for="registerPassword">Password</label>
+                <input id="registerPassword" name="password" type="password" placeholder="Minimal 6 karakter" required />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn primary" id="registerBtn">Create Account</button>
+            </div>
+          </form>
+          <p class="hint">Setelah daftar, cek Gmail untuk verifikasi akun customer lalu login dari tab Login.</p>
+        </section>
+
+        <div id="accountMessage" class="note">Silakan login dengan nama pengguna dan password Anda.</div>
+      </div>
+    </div>
+
+    <script>
+      const accountMessage = document.getElementById('accountMessage');
+      const loginTab = document.getElementById('loginTab');
+      const registerTab = document.getElementById('registerTab');
+      const loginPanel = document.getElementById('loginPanel');
+      const registerPanel = document.getElementById('registerPanel');
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const loginBtn = document.getElementById('loginBtn');
+      const registerBtn = document.getElementById('registerBtn');
+
+      const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5001/api`;
+
+      function setMessage(text, type) {
+        accountMessage.textContent = text;
+        accountMessage.classList.remove('ok', 'err');
+        if (type === 'ok') {
+          accountMessage.classList.add('ok');
+        }
+        if (type === 'err') {
+          accountMessage.classList.add('err');
+        }
+      }
+
+      function switchTab(mode) {
+        const isLogin = mode === 'login';
+        loginTab.classList.toggle('active', isLogin);
+        registerTab.classList.toggle('active', !isLogin);
+        loginTab.setAttribute('aria-selected', String(isLogin));
+        registerTab.setAttribute('aria-selected', String(!isLogin));
+        loginPanel.classList.toggle('active', isLogin);
+        registerPanel.classList.toggle('active', !isLogin);
+      }
+
+      function decodeJwt(token) {
+        try {
+          const payload = token.split('.')[1];
+          if (!payload) return null;
+          const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+          const decoded = atob(normalized + '='.repeat((4 - normalized.length % 4) % 4));
+          return JSON.parse(decoded);
+        } catch (_) {
+          return null;
+        }
+      }
+
+      async function verifyByQueryToken() {
+        const params = new URLSearchParams(window.location.search);
+        const verifyToken = params.get('verify');
+
+        if (!verifyToken) {
+          return;
+        }
+
+        setMessage('Memverifikasi akun customer...', '');
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/verify-email?token=${encodeURIComponent(verifyToken)}`);
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.message || 'Verifikasi gagal.');
+          }
+
+          setMessage(payload.message || 'Verifikasi berhasil. Silakan login.', 'ok');
+          switchTab('login');
+
+          const cleanUrl = `${window.location.origin}/teamapple/account.html`;
+          window.history.replaceState({}, '', cleanUrl);
+        } catch (error) {
+          setMessage(error.message || 'Verifikasi gagal.', 'err');
+        }
+      }
+
+      loginTab.addEventListener('click', () => switchTab('login'));
+      registerTab.addEventListener('click', () => switchTab('register'));
+
+      loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        if (!username || !password) {
+          setMessage('Nama pengguna dan password wajib diisi.', 'err');
+          return;
+        }
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Memproses...';
+        setMessage('Sedang login...', '');
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.message || 'Login gagal.');
+          }
+
+          const token = payload.data?.token;
+          const user = payload.data?.user;
+
+          if (!token || !user) {
+            throw new Error('Response login tidak valid.');
+          }
+
+          localStorage.setItem('token', token);
+          const role = String(user.role || '').toUpperCase();
+
+          if (role === 'ADMIN' || role === 'STAFF') {
+            setMessage('Login berhasil. Anda akan diarahkan ke kasir.', 'ok');
+            window.location.href = '/pos';
+            return;
+          }
+
+          if (role === 'CUSTOMER') {
+            setMessage('Login customer berhasil. Silakan lanjut belanja di website TeamApple.', 'ok');
+            setTimeout(() => {
+              window.location.href = '/teamapple/';
+            }, 700);
+            return;
+          }
+
+          const decoded = decodeJwt(token);
+          if (decoded && (decoded.role === 'ADMIN' || decoded.role === 'STAFF')) {
+            window.location.href = '/pos';
+            return;
+          }
+
+          window.location.href = '/teamapple/';
+        } catch (error) {
+          setMessage(error.message || 'Login gagal.', 'err');
+        } finally {
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Login';
+        }
+      });
+
+      registerForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('registerName').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
+        const username = document.getElementById('registerUsername').value.trim();
+        const password = document.getElementById('registerPassword').value;
+
+        if (!name || !email || !username || !password) {
+          setMessage('Nama, email, nama pengguna, dan password wajib diisi.', 'err');
+          return;
+        }
+
+        if (password.length < 6) {
+          setMessage('Password minimal 6 karakter.', 'err');
+          return;
+        }
+
+        registerBtn.disabled = true;
+        registerBtn.textContent = 'Mendaftarkan...';
+        setMessage('Membuat akun customer...', '');
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/register-customer`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, username, password })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.message || 'Create account gagal.');
+          }
+
+          const devLink = payload.data?.verification_url;
+          if (devLink) {
+            setMessage(`Akun dibuat. SMTP belum aktif, gunakan link verifikasi ini: ${devLink}`, 'ok');
+          } else {
+            setMessage(payload.message || 'Akun berhasil dibuat. Cek Gmail untuk verifikasi.', 'ok');
+          }
+
+          registerForm.reset();
+          switchTab('login');
+        } catch (error) {
+          setMessage(error.message || 'Create account gagal.', 'err');
+        } finally {
+          registerBtn.disabled = false;
+          registerBtn.textContent = 'Create Account';
+        }
+      });
+
+      verifyByQueryToken();
+    </script>
+  </body>
+</html>

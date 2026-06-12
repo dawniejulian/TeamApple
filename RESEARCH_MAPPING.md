@@ -8,7 +8,13 @@ Dokumen ini menjelaskan bagaimana fitur-fitur yang disebutkan dalam dokumen pene
 
 ## 📚 Bagian I.1: Latar Belakang → Implementasi
 
-### Masalah yang Diidentifikasi:
+### Latar Belakang
+
+Perkembangan penjualan melalui berbagai kanal, seperti toko fisik, WhatsApp, Instagram, dan marketplace, menuntut pelaku usaha untuk mengelola data operasional secara terintegrasi. Dalam praktiknya, banyak proses masih dilakukan secara manual atau tersebar di beberapa platform, sehingga menimbulkan ketidaksinkronan data stok, perbedaan harga antar kanal, serta keterlambatan penyusunan laporan penjualan. Kondisi ini berisiko menurunkan akurasi keputusan bisnis dan kualitas layanan kepada pelanggan.
+
+Kasirin dirancang sebagai sistem terpusat untuk menjawab tantangan tersebut. Melalui pengelolaan data inventori, transaksi, harga, dan pelaporan dalam satu platform, Kasirin membantu bisnis memperoleh visibilitas operasional yang lebih baik, meminimalkan kesalahan pencatatan, serta meningkatkan efisiensi proses harian.
+
+### Masalah yang Diidentifikasi
 
 #### 1. Sinkronisasi Stok Offline-Online
 **Masalah**: Stok di toko fisik tidak sinkron dengan marketplace (Tokopedia, Shopee)

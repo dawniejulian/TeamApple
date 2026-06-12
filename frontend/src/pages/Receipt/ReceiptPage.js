@@ -9,6 +9,12 @@ export default function ReceiptPage() {
   const [selectedSale, setSelectedSale] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saleDetails, setSaleDetails] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredSales = sales.filter(sale => 
+    (sale.invoice_number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (sale.sales_number || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     fetchSales();
@@ -64,11 +70,20 @@ export default function ReceiptPage() {
         <div className="lg:col-span-1">
           <div className="card">
             <h2 className="text-lg font-semibold mb-4 text-blue-950">Daftar Penjualan</h2>
+            <div className="mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari No. Invoice..."
+                className="form-input w-full rounded-xl border-blue-200/80 focus:border-blue-500 text-sm"
+              />
+            </div>
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {sales.length === 0 ? (
+              {filteredSales.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">Tidak ada data penjualan</p>
               ) : (
-                sales.map(sale => (
+                filteredSales.map(sale => (
                   <button
                     key={sale.id}
                     onClick={() => handleSelectSale(sale.id)}
@@ -78,11 +93,11 @@ export default function ReceiptPage() {
                         : 'bg-white/60 hover:bg-white border-2 border-blue-100/70'
                     }`}
                   >
-                    <div className="font-semibold">No: {sale.sales_number}</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="font-semibold text-blue-950 font-mono text-sm">{sale.invoice_number || sale.sales_number}</div>
+                    <div className="text-xs text-gray-600 mt-1">
                       {new Date(sale.created_at).toLocaleDateString('id-ID')}
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-800 font-semibold mt-1">
                       Total: Rp {parseInt(sale.total_amount).toLocaleString('id-ID')}
                     </div>
                   </button>
@@ -125,12 +140,12 @@ export default function ReceiptPage() {
               >
                 {/* Header */}
                 <div className="text-center mb-2">
-                  <div className="text-lg font-bold text-blue-600 mb-1">💎 KASIRIN</div>
+                  <div className="text-lg font-bold text-blue-600 mb-1">💎 TeamApple.Hub</div>
                   <div className="text-xs font-semibold">Toko Apple Terpercaya</div>
                   <div className="text-xs text-gray-700">
                     <div>Jl. Merdeka No. 123, Jakarta</div>
                     <div>Telp: 0812-3456-7890</div>
-                    <div>Email: info@kasirin.com</div>
+                    <div>Email: info@teamapplehub.com</div>
                   </div>
                 </div>
 
@@ -247,7 +262,7 @@ export default function ReceiptPage() {
                     Simpan struk ini untuk garansi produk
                   </div>
                   <div className="border-t border-gray-400 pt-1 mt-1">
-                    <div className="text-yellow-600">⭐ Powered by KASIRIN ⭐</div>
+                    <div className="text-yellow-600">⭐ Powered by TeamApple.Hub ⭐</div>
                     <div className="text-gray-600">Sistem Manajemen Stok & Penjualan</div>
                     <div className="text-gray-600">Printed: {new Date().toLocaleString('id-ID')}</div>
                   </div>

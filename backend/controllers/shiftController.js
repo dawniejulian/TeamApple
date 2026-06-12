@@ -69,33 +69,37 @@ class ShiftController {
 
       const shift = shiftResult.rows[0];
 
-      // Calculate total transactions for this shift
+      // Calculate total transactions and sales for this shift
       const txnResult = await pool.query(
-        `SELECT COALESCE(SUM(total_amount), 0) as total_sales
+        `SELECT COALESCE(SUM(total_amount), 0) as total_sales,
+                COALESCE(COUNT(id), 0)::int as total_transactions
          FROM sales
          WHERE cashier_shift_id = $1`,
         [shift_id]
       );
 
-      const totalSales = txnResult.rows[0].total_sales;
-      const expectedAmount = Number(shift.float_amount) + Number(totalSales);
-      const discrepancy = Number(actual_amount) - expectedAmount;
+      const totalSales = parseFloat(txnResult.rows[0].total_sales || 0);
+      const totalTransactions = parseInt(txnResult.rows[0].total_transactions || 0, 10);
+      const expectedAmount = parseFloat(shift.float_amount) + totalSales;
+      const discrepancy = parseFloat(actual_amount) - expectedAmount;
 
       // Update shift with closing details
       const updateResult = await pool.query(
         `UPDATE cashier_shifts
          SET closed_at = NOW(), 
              actual_amount = $1,
-             total_transactions = $2,
-             expected_amount = $3,
-             discrepancy = $4,
-             status = $5,
-             discrepancy_notes = $6
-         WHERE id = $7
+             total_sales = $2,
+             total_transactions = $3,
+             expected_amount = $4,
+             discrepancy = $5,
+             status = $6,
+             discrepancy_notes = $7
+         WHERE id = $8
          RETURNING *`,
         [
           actual_amount,
           totalSales,
+          totalTransactions,
           expectedAmount,
           discrepancy,
           discrepancy === 0 ? 'CLOSED_OK' : 'CLOSED_DISCREPANCY',
@@ -137,8 +141,12 @@ class ShiftController {
 
       const result = await pool.query(
         `SELECT 
-          cs.*, u.username, u.email,
-          COALESCE((SELECT SUM(total_amount) FROM sales WHERE cashier_shift_id = cs.id), 0)::FLOAT as current_total
+          cs.id, cs.outlet_id, cs.user_id, cs.opened_at, cs.closed_at,
+          cs.float_amount, cs.status, cs.created_at, cs.updated_at,
+          u.username, u.email, u.first_name, u.last_name,
+          COALESCE((SELECT SUM(total_amount) FROM sales WHERE cashier_shift_id = cs.id), 0)::FLOAT as total_sales,
+          (cs.float_amount + COALESCE((SELECT SUM(total_amount) FROM sales WHERE cashier_shift_id = cs.id), 0))::FLOAT as expected_amount,
+          COALESCE((SELECT COUNT(id) FROM sales WHERE cashier_shift_id = cs.id), 0)::INT as total_transactions
          FROM cashier_shifts cs
          LEFT JOIN users u ON cs.user_id = u.id
          WHERE cs.user_id = $1 AND cs.outlet_id = $2 AND cs.closed_at IS NULL`,
@@ -170,7 +178,7 @@ class ShiftController {
           cs.id, cs.outlet_id, cs.user_id, cs.opened_at, cs.closed_at,
           cs.float_amount, cs.total_sales, cs.total_transactions,
           cs.expected_amount, cs.actual_amount, cs.discrepancy,
-          cs.status, u.username, u.first_name, u.last_name
+          cs.status, cs.discrepancy_notes, u.username, u.first_name, u.last_name
          FROM cashier_shifts cs
          LEFT JOIN users u ON cs.user_id = u.id
          WHERE cs.outlet_id = $1

@@ -1,6 +1,7 @@
 // backend/routes/admin.js
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 const pool = require('../config/database');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
@@ -51,14 +52,14 @@ router.post('/users', async (req, res) => {
       });
     }
 
-    // TODO: Hash password with bcryptjs
-    // const hashedPassword = await bcryptjs.hash(password, 10);
+    // Hash password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(`
       INSERT INTO users (username, email, password, first_name, last_name, role_id, phone)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id, username, email, first_name, last_name, role_id
-    `, [username, email, password, first_name, last_name, role_id, phone]);
+    `, [username, email, hashedPassword, first_name, last_name, role_id, phone]);
 
     res.status(201).json({
       status: 'SUCCESS',

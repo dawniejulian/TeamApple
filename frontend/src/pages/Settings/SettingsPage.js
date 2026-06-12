@@ -1,12 +1,23 @@
 // frontend/src/pages/Settings/SettingsPage.js
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import api from '../../services/api';
+import { getDeviceId } from '../../utils/deviceFingerprint';
+import {
+  FiSmartphone,
+  FiCopy,
+  FiCheck,
+  FiPlus,
+  FiRefreshCw,
+  FiTrash2
+} from 'react-icons/fi';
 
 const SETTINGS_STORAGE_KEY = 'kasirin_settings_v1';
 
 const DEFAULT_SETTINGS = {
   storeProfile: {
-    storeName: 'Kasirin Store',
+    storeName: 'TeamApple.Hub',
     phone: '',
     address: '',
     receiptFooter: 'Terima kasih sudah berbelanja'
@@ -43,13 +54,8 @@ const DEFAULT_SETTINGS = {
   }
 };
 
-const TABS = [
-  { key: 'storeProfile', label: 'Profil Toko' },
-  { key: 'taxAndPricing', label: 'Pajak & Harga' },
-  { key: 'payment', label: 'Pembayaran' },
-  { key: 'stockAndAlerts', label: 'Stok & Alert' },
-  { key: 'receiptAndPrinter', label: 'Struk & Printer' },
-  { key: 'accessControl', label: 'Hak Akses' }
+const DEFAULT_TABS = [
+  { key: 'stockAndAlerts', label: 'Stok & Alert' }
 ];
 
 function getInitialSettings() {
@@ -89,12 +95,92 @@ function SettingsInput({ label, children }) {
 }
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('storeProfile');
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
+
+  const TABS = useMemo(() => {
+    if (isAdmin) {
+      return [...DEFAULT_TABS, { key: 'storeDevices', label: 'Perangkat Toko' }];
+    }
+    return DEFAULT_TABS;
+  }, [isAdmin]);
+
+  const [activeTab, setActiveTab] = useState('stockAndAlerts');
   const [settings, setSettings] = useState(getInitialSettings);
+
+  // Device management state
+  const [devices, setDevices] = useState([]);
+  const [devicesLoading, setDevicesLoading] = useState(false);
+  const [newDeviceName, setNewDeviceName] = useState('');
+  const [newDeviceId, setNewDeviceId] = useState('');
+  const [useCurrentDevice, setUseCurrentDevice] = useState(true);
+  const [copiedId, setCopiedId] = useState(false);
+
+  const fetchDevices = async () => {
+    setDevicesLoading(true);
+    try {
+      const res = await api.get('/devices');
+      if (res.data.status === 'SUCCESS') {
+        setDevices(res.data.data);
+      }
+    } catch (err) {
+      toast.error('Gagal mengambil daftar perangkat');
+    } finally {
+      setDevicesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'storeDevices' && isAdmin) {
+      fetchDevices();
+      setNewDeviceId(getDeviceId());
+    }
+  }, [activeTab, isAdmin]);
+
+  const handleRegisterDevice = async (e) => {
+    e.preventDefault();
+    if (!newDeviceName.trim()) {
+      toast.warning('Nama perangkat harus diisi');
+      return;
+    }
+    const targetId = useCurrentDevice ? getDeviceId() : newDeviceId;
+    if (!targetId.trim()) {
+      toast.warning('Device ID harus diisi');
+      return;
+    }
+
+    try {
+      const res = await api.post('/devices/register', {
+        device_id: targetId.trim(),
+        device_name: newDeviceName.trim()
+      });
+      if (res.data.status === 'SUCCESS') {
+        toast.success(res.data.message || 'Perangkat berhasil didaftarkan');
+        setNewDeviceName('');
+        if (!useCurrentDevice) setNewDeviceId('');
+        fetchDevices();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal mendaftarkan perangkat');
+    }
+  };
+
+  const handleDeleteDevice = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menonaktifkan perangkat ini?')) return;
+    try {
+      const res = await api.delete(`/devices/${id}`);
+      if (res.data.status === 'SUCCESS') {
+        toast.success(res.data.message || 'Perangkat berhasil dinonaktifkan');
+        fetchDevices();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal menonaktifkan perangkat');
+    }
+  };
 
   const activeTabLabel = useMemo(
     () => TABS.find((tab) => tab.key === activeTab)?.label || 'Pengaturan',
-    [activeTab]
+    [activeTab, TABS]
   );
 
   const updateSection = (section, patch) => {
@@ -127,7 +213,7 @@ export default function SettingsPage() {
               className="form-input"
               value={settings.storeProfile.storeName}
               onChange={(e) => updateSection('storeProfile', { storeName: e.target.value })}
-              placeholder="Contoh: Kasirin Mart"
+              placeholder="Contoh: TeamApple.Hub"
             />
           </SettingsInput>
 
@@ -161,43 +247,7 @@ export default function SettingsPage() {
       );
     }
 
-    if (activeTab === 'taxAndPricing') {
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SettingsInput label="Pajak Default (%)">
-            <input
-              type="number"
-              min="0"
-              max="100"
-              className="form-input"
-              value={settings.taxAndPricing.taxPercent}
-              onChange={(e) => updateSection('taxAndPricing', { taxPercent: Number(e.target.value || 0) })}
-            />
-          </SettingsInput>
 
-          <SettingsInput label="Mode Pembulatan">
-            <select
-              className="form-input"
-              value={settings.taxAndPricing.roundingMode}
-              onChange={(e) => updateSection('taxAndPricing', { roundingMode: e.target.value })}
-            >
-              <option value="NONE">Tanpa Pembulatan</option>
-              <option value="UP_100">Bulatkan Ke Atas 100</option>
-              <option value="DOWN_100">Bulatkan Ke Bawah 100</option>
-            </select>
-          </SettingsInput>
-
-          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
-            <input
-              type="checkbox"
-              checked={settings.taxAndPricing.taxIncludedInPrice}
-              onChange={(e) => updateSection('taxAndPricing', { taxIncludedInPrice: e.target.checked })}
-            />
-            Harga jual sudah termasuk pajak
-          </label>
-        </div>
-      );
-    }
 
     if (activeTab === 'payment') {
       return (
@@ -345,36 +395,211 @@ export default function SettingsPage() {
       );
     }
 
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
-          <input
-            type="checkbox"
-            checked={settings.accessControl.staffCanEditPrice}
-            onChange={(e) => updateSection('accessControl', { staffCanEditPrice: e.target.checked })}
-          />
-          Staff boleh ubah harga jual
-        </label>
+    if (activeTab === 'accessControl') {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
+            <input
+              type="checkbox"
+              checked={settings.accessControl.staffCanEditPrice}
+              onChange={(e) => updateSection('accessControl', { staffCanEditPrice: e.target.checked })}
+            />
+            Staff boleh ubah harga jual
+          </label>
 
-        <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
-          <input
-            type="checkbox"
-            checked={settings.accessControl.staffCanGiveDiscount}
-            onChange={(e) => updateSection('accessControl', { staffCanGiveDiscount: e.target.checked })}
-          />
-          Staff boleh memberi diskon
-        </label>
+          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
+            <input
+              type="checkbox"
+              checked={settings.accessControl.staffCanGiveDiscount}
+              onChange={(e) => updateSection('accessControl', { staffCanGiveDiscount: e.target.checked })}
+            />
+            Staff boleh memberi diskon
+          </label>
 
-        <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
-          <input
-            type="checkbox"
-            checked={settings.accessControl.managerMustApprovePO}
-            onChange={(e) => updateSection('accessControl', { managerMustApprovePO: e.target.checked })}
-          />
-          PO harus disetujui Manager/Admin
-        </label>
-      </div>
-    );
+          <label className="flex items-center gap-3 text-sm font-medium text-blue-900/85">
+            <input
+              type="checkbox"
+              checked={settings.accessControl.managerMustApprovePO}
+              onChange={(e) => updateSection('accessControl', { managerMustApprovePO: e.target.checked })}
+            />
+            PO harus disetujui Admin / Pemilik
+          </label>
+        </div>
+      );
+    }
+
+    if (activeTab === 'storeDevices') {
+      const currentDeviceId = getDeviceId();
+      return (
+        <div className="space-y-6">
+          <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 sm:p-5">
+            <h3 className="text-base font-bold text-[#1e355f] mb-2 flex items-center gap-2">
+              <FiSmartphone className="text-blue-600" /> Perangkat Anda Saat Ini
+            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-xs text-[#5675ad] font-semibold uppercase tracking-wider mb-1">Device ID Browser ini</p>
+                <code className="bg-white px-3 py-1.5 rounded-lg border border-blue-100 font-mono text-xs text-gray-700 block sm:inline-block break-all">
+                  {currentDeviceId}
+                </code>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(currentDeviceId);
+                  setCopiedId(true);
+                  toast.success('Device ID disalin!');
+                  setTimeout(() => setCopiedId(false), 2000);
+                }}
+                className="flex items-center justify-center gap-2 self-start sm:self-center border border-blue-200 bg-white hover:bg-blue-50 text-[#2d4f89] text-xs font-bold px-3 py-2 rounded-xl transition whitespace-nowrap"
+              >
+                {copiedId ? <><FiCheck size={14} /> Tersalin</> : <><FiCopy size={14} /> Salin Device ID</>}
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Form */}
+            <div className="lg:col-span-1 bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-gray-800">Daftarkan Perangkat Baru</h3>
+              <form onSubmit={handleRegisterDevice} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Nama Perangkat
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newDeviceName}
+                    onChange={(e) => setNewDeviceName(e.target.value)}
+                    placeholder="Contoh: iPad Kasir Utama"
+                    className="form-input text-xs"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={useCurrentDevice}
+                      onChange={(e) => {
+                        setUseCurrentDevice(e.target.checked);
+                        if (e.target.checked) {
+                          setNewDeviceId(currentDeviceId);
+                        } else {
+                          setNewDeviceId('');
+                        }
+                      }}
+                      className="rounded text-blue-600"
+                    />
+                    Gunakan Perangkat Ini
+                  </label>
+
+                  {!useCurrentDevice && (
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                        Device ID Perangkat Lain
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newDeviceId}
+                        onChange={(e) => setNewDeviceId(e.target.value)}
+                        placeholder="Tempel Device ID perangkat kasir"
+                        className="form-input text-xs font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full flex items-center justify-center gap-2 btn-primary text-xs py-2 rounded-xl"
+                >
+                  <FiPlus size={14} /> Daftarkan Perangkat
+                </button>
+              </form>
+            </div>
+
+            {/* List */}
+            <div className="lg:col-span-2 bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col min-h-[300px]">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-gray-800">Daftar Perangkat Terdaftar</h3>
+                <button
+                  type="button"
+                  onClick={fetchDevices}
+                  disabled={devicesLoading}
+                  className="p-1 text-blue-600 hover:text-blue-700 transition"
+                  title="Segarkan daftar"
+                >
+                  <FiRefreshCw size={14} className={devicesLoading ? 'animate-spin' : ''} />
+                </button>
+              </div>
+
+              {devicesLoading && devices.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+                  <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mb-2" />
+                  <p className="text-xs">Memuat perangkat...</p>
+                </div>
+              ) : devices.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-gray-400 text-center">
+                  <FiSmartphone size={32} className="mb-2 opacity-40" />
+                  <p className="text-xs">Belum ada perangkat kasir terdaftar</p>
+                  <p className="text-[10px] max-w-xs mt-1">
+                    Staff kasir tidak akan bisa mengakses halaman Kasir POS jika tidak ada perangkat yang didaftarkan.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-gray-100 pb-2 text-gray-400 uppercase tracking-wider font-semibold">
+                        <th className="pb-2">Nama Perangkat</th>
+                        <th className="pb-2">Device ID</th>
+                        <th className="pb-2">IP Address</th>
+                        <th className="pb-2">Status</th>
+                        <th className="pb-2 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {devices.map((device) => (
+                        <tr key={device.id} className="hover:bg-gray-50/50">
+                          <td className="py-2.5 font-semibold text-gray-800">{device.device_name}</td>
+                          <td className="py-2.5 font-mono text-[10px] text-gray-500 max-w-[120px] truncate" title={device.device_id}>
+                            {device.device_id}
+                          </td>
+                          <td className="py-2.5 text-gray-500 font-mono text-[10px]">{device.ip_address || '-'}</td>
+                          <td className="py-2.5">
+                            <span className={`inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                              device.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                            }`}>
+                              {device.is_active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="py-2.5 text-right">
+                            {device.is_active && (
+                              <button
+                                onClick={() => handleDeleteDevice(device.id)}
+                                className="text-red-500 hover:text-red-700 p-1 transition"
+                                title="Nonaktifkan perangkat"
+                              >
+                                <FiTrash2 size={13} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (

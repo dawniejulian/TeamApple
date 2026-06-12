@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -11,6 +12,9 @@ const app = express();
 // Body Parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Static files for uploaded product images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // CORS
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3001')
@@ -27,11 +31,13 @@ const corsOrigins = [
   'http://frontend:3000',       // Docker network service name
 ];
 
+const privateNetworkOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/;
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    if (corsOrigins.includes(origin)) {
+    if (corsOrigins.includes(origin) || privateNetworkOriginPattern.test(origin)) {
       return callback(null, true);
     }
     console.warn(`⚠️ CORS warning: ${origin} not in allowed list`);
@@ -87,8 +93,20 @@ app.use('/api/reports', require('./routes/reports'));
 // Dashboard Routes
 app.use('/api/dashboard', require('./routes/dashboard'));
 
+// AI Assistant Routes
+app.use('/api/ai', require('./routes/ai'));
+
 // Admin Routes
 app.use('/api/admin', require('./routes/admin'));
+
+// Store Devices Routes
+app.use('/api/devices', require('./routes/devices'));
+
+// Activity Logs Routes
+app.use('/api/activity-logs', require('./routes/activity-logs'));
+
+// Integrations Routes
+app.use('/api/integrations', require('./routes/integrations'));
 
 // ============================================================================
 // ERROR HANDLING

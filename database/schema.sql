@@ -22,9 +22,19 @@ CREATE TABLE users (
   role_id INTEGER REFERENCES roles(id),
   phone VARCHAR(20),
   is_active BOOLEAN DEFAULT TRUE,
+  email_verified BOOLEAN DEFAULT TRUE,
   last_login TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE customer_email_verifications (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token VARCHAR(128) NOT NULL UNIQUE,
+  expires_at TIMESTAMP NOT NULL,
+  used_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ============================================================================
@@ -375,7 +385,8 @@ INSERT INTO roles (name, description) VALUES
 ('ADMIN', 'Administrator - Full Access'),
 ('MANAGER', 'Manager - Can manage inventory and sales'),
 ('STAFF', 'Sales Staff - Can process sales'),
-('VIEWER', 'Viewer - Read only access');
+('VIEWER', 'Viewer - Read only access'),
+('CUSTOMER', 'Customer - Akses website publik TeamApple');
 
 -- Product Conditions
 INSERT INTO product_conditions (name, description) VALUES
@@ -414,7 +425,7 @@ INSERT INTO products (sku, name, category_id, description, condition_id, buy_pri
 
 -- Sample Users (admin=admin123, manager=manager123, staff1=staff123)
 INSERT INTO users (username, email, password, first_name, last_name, role_id, phone, is_active) VALUES
-('admin', 'admin@kasirin.local', '$2a$10$IW.XwMjwv/vUiqOLZbvrf.QXLsqPugNoBLPfjCRdPicX2h5Q4n3Qy', 'Admin', 'Kasirin', 1, '081234567890', TRUE),
+('admin', 'admin@kasirin.local', '$2a$10$IW.XwMjwv/vUiqOLZbvrf.QXLsqPugNoBLPfjCRdPicX2h5Q4n3Qy', 'Admin', '', 1, '081234567890', TRUE),
 ('manager', 'manager@kasirin.local', '$2a$10$58Bx2tnQ3S/u5LtdVmoVA.InqeL9Y/5H12B/3h0GVxFzzdm2UEhby', 'Manajer', 'Toko', 2, '081234567891', TRUE),
 ('staff1', 'staff1@kasirin.local', '$2a$10$OV0VK4JLfxEw05yBSNXHEeiwxXz3YqF5RLrSZ7nO57iliWczwAoDK', 'Staf', 'Penjualan', 3, '081234567892', TRUE);
 

@@ -152,9 +152,6 @@ class PurchaseOrderController {
     }
   }
 
-  /**
-   * Update PO status (DRAFT → APPROVED → SENT → RECEIVED)
-   */
   static async updatePOStatus(req, res) {
     try {
       const { po_id } = req.params;
@@ -165,26 +162,145 @@ class PurchaseOrderController {
         return res.status(400).json({ error: `Invalid status. Must be: ${validStatuses.join(', ')}` });
       }
 
-      const result = await pool.query(
-        `UPDATE purchase_orders
-         SET status = $1, updated_at = NOW()
-         WHERE id = $2
-         RETURNING *`,
-        [status, po_id]
-      );
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'PO not found' });
+        // 1. Get the current PO header to check its previous status
+        const poQuery = await client.query(
+          `SELECT status FROM purchase_orders WHERE id = $1 FOR UPDATE`,
+          [po_id]
+        );
+
+        if (poQuery.rows.length === 0) {
+          throw new Error('PO tidak ditemukan');
+        }
+
+        const oldStatus = poQuery.rows[0].status;
+
+        // If status hasn't changed, we can just commit and return
+        if (oldStatus === status) {
+          await client.query('COMMIT');
+          return res.json({
+            success: true,
+            message: `PO status sudah bernilai ${status}`,
+            data: { id: po_id, status }
+          });
+        }
+
+        // Get items for this PO
+        const itemsQuery = await client.query(
+          `SELECT product_id, quantity FROM purchase_order_items WHERE purchase_order_id = $1`,
+          [po_id]
+        );
+        const poItems = itemsQuery.rows;
+
+        // Default warehouse ID is 1
+        const targetWarehouseId = 1; 
+
+        // Let's resolve warehouse location or ensure warehouse Gudang Utama exist
+        const whResult = await client.query(`
+          INSERT INTO warehouse_locations (name, description)
+          VALUES ('Gudang Utama', 'Lokasi default sistem')
+          ON CONFLICT (name)
+          DO UPDATE SET description = warehouse_locations.description
+          RETURNING id
+        `);
+        const warehouseId = whResult.rows[0].id;
+
+        // Handle inventory logic based on status changes
+        if (status === 'SENT') {
+          // Transitioning TO SENT (In Transit / Sedang Dalam Perjalanan): Increment quantity_reserved (Stok Dipesan)
+          for (const item of poItems) {
+            await client.query(`
+              INSERT INTO inventory (product_id, warehouse_location_id, quantity_available, quantity_reserved, quantity_damaged, updated_at)
+              VALUES ($1, $2, 0, $3, 0, CURRENT_TIMESTAMP)
+              ON CONFLICT (product_id, warehouse_location_id)
+              DO UPDATE SET
+                quantity_reserved = inventory.quantity_reserved + EXCLUDED.quantity_reserved,
+                updated_at = CURRENT_TIMESTAMP
+            `, [item.product_id, warehouseId, item.quantity]);
+          }
+        } 
+        else if (status === 'RECEIVED') {
+          // Transitioning TO RECEIVED (Telah Diterima):
+          for (const item of poItems) {
+            if (oldStatus === 'SENT') {
+              // Decrement quantity_reserved (Stok Dipesan) and increment quantity_available (Stok Tersedia)
+              await client.query(`
+                INSERT INTO inventory (product_id, warehouse_location_id, quantity_available, quantity_reserved, quantity_damaged, updated_at)
+                VALUES ($1, $2, $3, 0, 0, CURRENT_TIMESTAMP)
+                ON CONFLICT (product_id, warehouse_location_id)
+                DO UPDATE SET
+                  quantity_available = inventory.quantity_available + EXCLUDED.quantity_available,
+                  quantity_reserved = GREATEST(0, inventory.quantity_reserved - EXCLUDED.quantity_available),
+                  updated_at = CURRENT_TIMESTAMP
+              `, [item.product_id, warehouseId, item.quantity]);
+            } else {
+              // Just increment quantity_available directly (was draft/approved, didn't reserve)
+              await client.query(`
+                INSERT INTO inventory (product_id, warehouse_location_id, quantity_available, quantity_reserved, quantity_damaged, updated_at)
+                VALUES ($1, $2, $3, 0, 0, CURRENT_TIMESTAMP)
+                ON CONFLICT (product_id, warehouse_location_id)
+                DO UPDATE SET
+                  quantity_available = inventory.quantity_available + EXCLUDED.quantity_available,
+                  updated_at = CURRENT_TIMESTAMP
+              `, [item.product_id, warehouseId, item.quantity]);
+            }
+
+            // Also record movement
+            await client.query(`
+              INSERT INTO stock_movements 
+              (product_id, warehouse_location_id, movement_type, quantity, reference_id, reference_type, notes, created_by)
+              VALUES ($1, $2, 'STOCK_IN', $3, $4, 'PURCHASE', $5, $6)
+            `, [item.product_id, warehouseId, item.quantity, po_id, notes || 'Diterima dari Purchase Order', req.user?.id || 1]);
+            
+            // Mark all items as fully received since status is RECEIVED
+            await client.query(`
+              UPDATE purchase_order_items
+              SET quantity_received = quantity
+              WHERE purchase_order_id = $1 AND product_id = $2
+            `, [po_id, item.product_id]);
+          }
+        } 
+        else if (status === 'CANCELLED' || status === 'DRAFT' || status === 'APPROVED') {
+          // If moving AWAY from SENT, decrement quantity_reserved (Stok Dipesan)
+          if (oldStatus === 'SENT') {
+            for (const item of poItems) {
+              await client.query(`
+                UPDATE inventory
+                SET quantity_reserved = GREATEST(0, quantity_reserved - $1),
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE product_id = $2 AND warehouse_location_id = $3
+              `, [item.quantity, item.product_id, warehouseId]);
+            }
+          }
+        }
+
+        // Update PO status
+        const updateResult = await client.query(
+          `UPDATE purchase_orders
+           SET status = $1, updated_at = NOW()
+           WHERE id = $2
+           RETURNING *`,
+          [status, po_id]
+        );
+
+        await client.query('COMMIT');
+        res.json({
+          success: true,
+          message: `PO status updated to ${status}`,
+          data: updateResult.rows[0]
+        });
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
       }
-
-      res.json({
-        success: true,
-        message: `PO status updated to ${status}`,
-        data: result.rows[0]
-      });
     } catch (error) {
       console.error('Update PO status error:', error);
-      res.status(500).json({ error: 'Failed to update PO' });
+      res.status(500).json({ error: error.message || 'Failed to update PO' });
     }
   }
 

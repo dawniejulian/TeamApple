@@ -25,7 +25,7 @@ router.get('/sales/products', ReportController.getProductSales);
  */
 
 // Cashier performance
-router.get('/cashier/performance', requireRole('MANAGER', 'ADMIN'), ReportController.getCashierPerformance);
+router.get('/cashier/performance', requireRole('ADMIN'), ReportController.getCashierPerformance);
 
 /**
  * Payment Reports
@@ -39,7 +39,7 @@ router.get('/payments/breakdown', ReportController.getPaymentMethodReport);
  */
 
 // Inventory valuation
-router.get('/inventory/valuation', requireRole('MANAGER', 'ADMIN'), ReportController.getInventoryValuation);
+router.get('/inventory/valuation', requireRole('STAFF', 'MANAGER', 'ADMIN'), ReportController.getInventoryValuation);
 
 /**
  * Dashboard
