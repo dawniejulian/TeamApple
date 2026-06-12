@@ -17,34 +17,38 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // CORS
-const frontendOrigins = (process.env.FRONTEND_URL || 'http://localhost:3001')
+const rawFrontendUrls = (process.env.FRONTEND_URL || 'http://localhost:3001')
   .split(',')
   .map(o => o.trim())
   .filter(Boolean);
 
-const extraProtocolOrigins = frontendOrigins.flatMap(origin => {
-  if (!origin.includes('://')) return [origin];
-  if (origin.startsWith('http://')) {
-    return [origin, origin.replace('http://', 'https://')];
+// Expand allowed origins to include both http and https variants when applicable
+const allowedOrigins = [];
+rawFrontendUrls.forEach((u) => {
+  if (!allowedOrigins.includes(u)) allowedOrigins.push(u);
+  if (u.startsWith('http://')) {
+    const httpsVariant = u.replace('http://', 'https://');
+    if (!allowedOrigins.includes(httpsVariant)) allowedOrigins.push(httpsVariant);
+  } else if (u.startsWith('https://')) {
+    const httpVariant = u.replace('https://', 'http://');
+    if (!allowedOrigins.includes(httpVariant)) allowedOrigins.push(httpVariant);
   }
-  if (origin.startsWith('https://')) {
-    return [origin, origin.replace('https://', 'http://')];
-  }
-  return [origin];
 });
 
-// Add localhost variants for Docker internal networking
-const corsOrigins = [
-  ...new Set([
-    ...frontendOrigins,
-    ...extraProtocolOrigins,
-    'http://localhost:3000',      // Docker internal frontend port
-    'http://localhost:3001',      // Host binding
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001',
-    'http://frontend:3000',       // Docker network service name
-  ])
-];
+// Add localhost, Docker network, and VPS variants
+const corsOrigins = Array.from(new Set([
+  ...allowedOrigins,
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://localhost:3002',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'https://127.0.0.1:3002',
+  'http://frontend:3000',
+  'https://frontend:3443',
+  'http://206.237.98.213',
+  'https://206.237.98.213',
+]));
 
 const privateNetworkOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/;
 
