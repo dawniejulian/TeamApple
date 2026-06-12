@@ -62,8 +62,8 @@ services:
       - "3001:3000"
       - "3002:3443"
       # Expose frontend on VPS public IP standard HTTP/HTTPS
-      - "206.237.98.213:80:3000"
-      - "206.237.98.213:443:3443"
+      - "${FRONTEND_VPS_BIND_1:-206.237.98.213:80:3000}"
+      - "${FRONTEND_VPS_BIND_2:-206.237.98.213:443:3443}"
     depends_on:
       - backend
     networks:
