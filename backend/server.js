@@ -17,18 +17,33 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // CORS
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3001')
+const frontendOrigins = (process.env.FRONTEND_URL || 'http://localhost:3001')
   .split(',')
-  .map(o => o.trim());
+  .map(o => o.trim())
+  .filter(Boolean);
+
+const extraProtocolOrigins = frontendOrigins.flatMap(origin => {
+  if (!origin.includes('://')) return [origin];
+  if (origin.startsWith('http://')) {
+    return [origin, origin.replace('http://', 'https://')];
+  }
+  if (origin.startsWith('https://')) {
+    return [origin, origin.replace('https://', 'http://')];
+  }
+  return [origin];
+});
 
 // Add localhost variants for Docker internal networking
 const corsOrigins = [
-  ...allowedOrigins,
-  'http://localhost:3000',      // Docker internal frontend port
-  'http://localhost:3001',      // Host binding
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:3001',
-  'http://frontend:3000',       // Docker network service name
+  ...new Set([
+    ...frontendOrigins,
+    ...extraProtocolOrigins,
+    'http://localhost:3000',      // Docker internal frontend port
+    'http://localhost:3001',      // Host binding
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'http://frontend:3000',       // Docker network service name
+  ])
 ];
 
 const privateNetworkOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/;
