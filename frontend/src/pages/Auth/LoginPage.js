@@ -100,7 +100,12 @@ export default function LoginPage() {
             {isLoading ? 'Memproses...' : 'Login'}
           </button>
         </form>
-        {/* Demo accounts box removed for security */}
+
+        <div className="mt-6 p-4 rounded-xl border border-blue-200/70 bg-white/70 text-sm text-blue-900/80 space-y-1">
+          <p className="font-semibold text-blue-800">Akun Tersedia:</p>
+          <p>👤 <strong>admin</strong> / admin123 (Administrator)</p>
+          <p>👤 <strong>staff1</strong> / staff123 (Staff)</p>
+        </div>
       </div>
     </div>
   );

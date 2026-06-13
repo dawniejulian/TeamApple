@@ -35,7 +35,7 @@ services:
       PORT: 5000
       NODE_ENV: production
       JWT_SECRET: kasirin_jwt_secret_2024_secure
-      FRONTEND_URL: http://localhost:3001,https://localhost:3002,https://206.237.98.213
+      FRONTEND_URL: ${FRONTEND_URL}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
@@ -66,6 +66,10 @@ services:
       - "${FRONTEND_VPS_BIND_2:-206.237.98.213:443:3443}"
     depends_on:
       - backend
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+      - "${SSL_CERT_PATH:-./frontend/certs/local-selfsigned.crt}:/etc/ssl/certs/nginx-selfsigned.crt:ro"
+      - "${SSL_KEY_PATH:-./frontend/certs/local-selfsigned.key}:/etc/ssl/private/nginx-selfsigned.key:ro"
     networks:
       - kasirin_network
     restart: unless-stopped
