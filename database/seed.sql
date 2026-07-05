@@ -61,21 +61,6 @@ VALUES (
 )
 ON CONFLICT (username) DO NOTHING;
 
--- MANAGER USER (Role: manager = id 2)
-INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, outlet_id, is_active)
-VALUES (
-  'manager1',
-  'manager@kasirin.com',
-  '$2b$10$KIXxPfxjYTgFxQpLMhTkJO/fFM6lKZH5KLvMeWt4r3LKT8R9DhXvS', -- admin123 hashed
-  'Toko',
-  'Manager',
-  '0812-2222-2222',
-  2,
-  (SELECT id FROM outlets WHERE is_main_office = true LIMIT 1),
-  true
-)
-ON CONFLICT (username) DO NOTHING;
-
 -- KASIR USER (Role: cashier = id 4)
 INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, outlet_id, is_active)
 VALUES (
@@ -86,21 +71,6 @@ VALUES (
   'Satu',
   '0812-3333-3333',
   4,
-  (SELECT id FROM outlets WHERE is_main_office = true LIMIT 1),
-  true
-)
-ON CONFLICT (username) DO NOTHING;
-
--- WAREHOUSE USER (Role: warehouse = id 5)
-INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, outlet_id, is_active)
-VALUES (
-  'warehouse1',
-  'warehouse@kasirin.com',
-  '$2b$10$KIXxPfxjYTgFxQpLMhTkJO/fFM6lKZH5KLvMeWt4r3LKT8R9DhXvS', -- admin123 hashed
-  'Warehouse',
-  'Keeper',
-  '0812-4444-4444',
-  5,
   (SELECT id FROM outlets WHERE is_main_office = true LIMIT 1),
   true
 )

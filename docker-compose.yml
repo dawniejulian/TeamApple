@@ -11,7 +11,7 @@ services:
       - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/schema_v2.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - kasirin_network
     healthcheck:
