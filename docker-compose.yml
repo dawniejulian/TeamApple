@@ -8,14 +8,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "127.0.0.1:5434:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/schema_v2.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - kasirin_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -66,15 +66,46 @@ services:
       - "${FRONTEND_VPS_BIND_2:-206.237.98.213:443:3443}"
     depends_on:
       - backend
+      - pgadmin
     volumes:
       - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
       - "${SSL_CERT_PATH:-./frontend/certs/local-selfsigned.crt}:/etc/ssl/certs/nginx-selfsigned.crt:ro"
       - "${SSL_KEY_PATH:-./frontend/certs/local-selfsigned.key}:/etc/ssl/private/nginx-selfsigned.key:ro"
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     networks:
       - kasirin_network
     restart: unless-stopped
     environment:
       REACT_APP_API_URL: AUTO
+
+  # pgAdmin Database Management GUI
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: kasirin_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@kasirin.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword123
+    ports:
+      - "127.0.0.1:5050:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - kasirin_network
+    restart: unless-stopped
+
+  # Let's Encrypt Certbot for Automated SSL Renewals
+  certbot:
+    image: certbot/certbot:v2.9.0
+    container_name: kasirin_certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - kasirin_network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
