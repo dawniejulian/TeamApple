@@ -27,7 +27,7 @@ if [ -z "$(docker compose ps --services --filter status=running)" ]; then
 fi
 
 echo "Requesting SSL certificate for: ${DOMAINS[*]}..."
-docker compose run --rm certbot certonly \
+docker compose run --rm --entrypoint certbot certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     $(printf -- "-d %s " "${DOMAINS[@]}") \
