@@ -388,4 +388,74 @@ router.put('/change-password', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * @route   PUT /api/auth/change-profile
+ * @desc    Change current user's username and/or password
+ * @access  Private
+ */
+router.put('/change-profile', authenticateToken, async (req, res) => {
+  try {
+    const { username, old_password, new_password } = req.body;
+    const userId = req.user.id;
+
+    // 1. If username is changing, validate it
+    if (username && username !== req.user.username) {
+      if (username.length < 3) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'Username minimal 3 karakter'
+        });
+      }
+
+      // Check if username already exists
+      const checkUsername = await pool.query('SELECT id FROM users WHERE username = $1 AND id != $2', [username, userId]);
+      if (checkUsername.rows.length > 0) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'Username sudah digunakan oleh akun lain'
+        });
+      }
+
+      await pool.query('UPDATE users SET username = $1, updated_at = NOW() WHERE id = $2', [username, userId]);
+    }
+
+    // 2. If password is changing, validate and update it
+    if (new_password) {
+      if (!old_password) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'Password lama harus diisi untuk mengubah password'
+        });
+      }
+
+      if (new_password.length < 6) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'Password baru minimal 6 karakter'
+        });
+      }
+
+      const result = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
+      const isMatch = await bcrypt.compare(old_password, result.rows[0].password);
+
+      if (!isMatch) {
+        return res.status(400).json({
+          status: 'ERROR',
+          message: 'Password lama tidak sesuai'
+        });
+      }
+
+      const newHash = await bcrypt.hash(new_password, 10);
+      await pool.query('UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2', [newHash, userId]);
+    }
+
+    res.json({
+      status: 'SUCCESS',
+      message: 'Profil berhasil diperbarui'
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'ERROR', message: error.message });
+  }
+});
+
 module.exports = router;

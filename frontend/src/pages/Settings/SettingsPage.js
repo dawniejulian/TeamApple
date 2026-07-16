@@ -1,9 +1,10 @@
 // frontend/src/pages/Settings/SettingsPage.js
 import React, { useMemo, useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import { getDeviceId } from '../../utils/deviceFingerprint';
+import { loadUser } from '../../store/slices/authSlice';
 import {
   FiSmartphone,
   FiCopy,
@@ -95,18 +96,38 @@ function SettingsInput({ label, children }) {
 }
 
 export default function SettingsPage() {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
 
   const TABS = useMemo(() => {
     if (isAdmin) {
-      return [...DEFAULT_TABS, { key: 'storeDevices', label: 'Perangkat Toko' }];
+      return [
+        ...DEFAULT_TABS,
+        { key: 'storeDevices', label: 'Perangkat Toko' },
+        { key: 'account', label: 'Akun' }
+      ];
     }
-    return DEFAULT_TABS;
+    return [
+      { key: 'account', label: 'Akun' }
+    ];
   }, [isAdmin]);
 
-  const [activeTab, setActiveTab] = useState('stockAndAlerts');
+  const [activeTab, setActiveTab] = useState(isAdmin ? 'stockAndAlerts' : 'account');
   const [settings, setSettings] = useState(getInitialSettings);
+
+  // Profile change state
+  const [profileUsername, setProfileUsername] = useState(user?.username || '');
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.username) {
+      setProfileUsername(user.username);
+    }
+  }, [user]);
 
   // Device management state
   const [devices, setDevices] = useState([]);
@@ -175,6 +196,46 @@ export default function SettingsPage() {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Gagal menonaktifkan perangkat');
+    }
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+
+    if (!profileUsername.trim()) {
+      toast.warning('Username tidak boleh kosong');
+      return;
+    }
+
+    if (newPassword && newPassword.length < 6) {
+      toast.warning('Password baru minimal 6 karakter');
+      return;
+    }
+
+    if (newPassword && newPassword !== confirmPassword) {
+      toast.error('Konfirmasi password baru tidak cocok');
+      return;
+    }
+
+    setProfileLoading(true);
+    try {
+      const res = await api.put('/auth/change-profile', {
+        username: profileUsername.trim(),
+        old_password: oldPassword || undefined,
+        new_password: newPassword || undefined
+      });
+
+      if (res.data.status === 'SUCCESS') {
+        toast.success(res.data.message || 'Profil berhasil diperbarui');
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        dispatch(loadUser());
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Gagal memperbarui profil');
+    } finally {
+      setProfileLoading(false);
     }
   };
 
@@ -596,6 +657,64 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+    if (activeTab === 'account') {
+      return (
+        <form onSubmit={handleUpdateProfile} className="max-w-md space-y-4">
+          <SettingsInput label="Username">
+            <input
+              type="text"
+              className="form-input"
+              value={profileUsername}
+              onChange={(e) => setProfileUsername(e.target.value)}
+              placeholder="Username baru"
+              required
+            />
+          </SettingsInput>
+
+          <div className="border-t border-gray-100 pt-4 mt-4">
+            <h3 className="text-sm font-bold text-gray-800 mb-3">Ubah Password (Opsional)</h3>
+            
+            <div className="space-y-4">
+              <SettingsInput label="Password Lama">
+                <input
+                  type="password"
+                  className="form-input"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder="Masukkan password lama"
+                />
+              </SettingsInput>
+
+              <SettingsInput label="Password Baru">
+                <input
+                  type="password"
+                  className="form-input"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Minimal 6 karakter"
+                />
+              </SettingsInput>
+
+              <SettingsInput label="Konfirmasi Password Baru">
+                <input
+                  type="password"
+                  className="form-input"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Ulangi password baru"
+                />
+              </SettingsInput>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={profileLoading}
+            className="btn-primary w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 mt-6"
+          >
+            {profileLoading ? 'Memproses...' : 'Simpan Perubahan Profil'}
+          </button>
+        </form>
       );
     }
 
@@ -609,10 +728,12 @@ export default function SettingsPage() {
           <h1 className="text-3xl font-bold page-title section-enter">Pengaturan</h1>
           <p className="text-sm text-blue-700/75 mt-1">Kelola konfigurasi operasional toko dan kasir</p>
         </div>
-        <div className="flex gap-2">
-          <button className="btn-secondary" onClick={resetSettings}>Reset Default</button>
-          <button className="btn-primary" onClick={saveSettings}>Simpan Pengaturan</button>
-        </div>
+        {activeTab !== 'account' && (
+          <div className="flex gap-2">
+            <button className="btn-secondary" onClick={resetSettings}>Reset Default</button>
+            <button className="btn-primary" onClick={saveSettings}>Simpan Pengaturan</button>
+          </div>
+        )}
       </div>
 
       <div className="card">

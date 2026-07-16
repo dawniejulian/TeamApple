@@ -109,11 +109,11 @@ function App() {
           {/* Reports */}
           <Route path="/reports" element={<ReportsPage />} />
 
-          {/* Settings: ADMIN only */}
+          {/* Settings: ADMIN and STAFF */}
           <Route
             path="/settings"
             element={(
-              <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <RoleProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
                 <SettingsPage />
               </RoleProtectedRoute>
             )}

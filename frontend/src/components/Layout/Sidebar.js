@@ -25,7 +25,7 @@ const ALL_MENU_ITEMS = [
   { icon: FiTruck,        label: 'Purchase Order',  path: '/purchase-orders', roles: ['ADMIN', 'STAFF'] },
   { icon: FiPrinter,      label: 'Cetak Struk',     path: '/receipt',         roles: ['ADMIN', 'STAFF'], hidden: true },
   { icon: FiTrendingUp,   label: 'Laporan',          path: '/reports',         roles: ['ADMIN', 'STAFF'] },
-  { icon: FiSettings,    label: 'Pengaturan',       path: '/settings',        roles: ['ADMIN'] },
+  { icon: FiSettings,    label: 'Pengaturan',       path: '/settings',        roles: ['ADMIN', 'STAFF'] },
 ];
 
 export default function Sidebar({ isOpen, onToggle }) {
